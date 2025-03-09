@@ -1,5 +1,10 @@
 # HKToss-MLOps-Proejct
 HK Toss MLOps 중간 프로젝트
+- 이유진
+- 이주안
+- 정혜진
+- 한예은
+- [최광일](https://github.com/choikwangil95)
 
 ## 목차
 - [1 프로젝트 개요](#1-프로젝트-개요)
@@ -51,17 +56,26 @@ git pull origin main
 ### 가상환경 설정
 ```bash
 # 가상환경 생성
-conda create -n <가상환경 이름> python=3.13 pip
+conda create -n <가상환경 이름> python=3.11 pip
 
 # 가상환경 활성화
 conda activate <가상환경 이름>
 ```
 
+### 커널 설정
+```bash
+# jupyter notebook 커널 라이브러리 설치
+conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
+
+# jupyter notebook 커널 설정
+커널 선택 -> <가상환경 이름> 선택
+```
+
 ### 패키지 설치
 ```bash
-# 트러블 슈팅 1 - pre-built pyarrow 설치
-conda install -c conda-forge pyarrow
-
 # 파이썬 패키지 설치
 pip install -r requirements.txt
+
+# 트러블 슈팅 - pre-built pyarrow 설치
+conda install -c conda-forge pyarrow
 ```
