@@ -32,7 +32,7 @@ HK Toss MLOps 중간 프로젝트
 
 ## 3 개발환경 구성
 ### 사전 요구사항
-- Language: Python 3.13
+- Language: Python 3.11
 - Pacakge manager: Anaconda / Miniconda
 
 ### git 설정
@@ -59,6 +59,9 @@ conda activate <가상환경 이름>
 
 ### 패키지 설치
 ```bash
+# 트러블 슈팅 1 - pre-built pyarrow 설치
+conda install -c conda-forge pyarrow
+
 # 파이썬 패키지 설치
 pip install -r requirements.txt
 ```
