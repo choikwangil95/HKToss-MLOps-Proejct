@@ -30,9 +30,16 @@ HK Toss MLOps 중간 프로젝트
 - T.B.D
 
 ## 2 프로젝트 구조
-### 아키텍쳐
-- T.B.D
 ### 폴더구조
+```markdown
+- 📁 datasets
+- 📁 features
+- 📁 src
+  - 📄 baseline.ipynb
+- 📄 requirements.txt
+```
+
+### 아키텍쳐
 - T.B.D
 
 ## 3 개발환경 구성
