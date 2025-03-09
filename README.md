@@ -75,7 +75,7 @@ conda activate <가상환경 이름>
 conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
 
 # jupyter notebook 커널 설정
-커널 선택 -> <가상환경 이름> 선택
+# 우측 상단 커널 선택 - Python Environments 선택 -  <가상환경 이름> 선택
 ```
 
 ### 패키지 설치
