@@ -8,6 +8,9 @@ HK Toss MLOps 중간 프로젝트
 
 ## 1 프로젝트 개요
 주택청약 당첨가점 예측 모델 개발
+
+![image](https://github.com/user-attachments/assets/6ad59110-0be8-4077-9479-3cbd20262a55)
+
 ### 문제정의
 - 문제
   - 청약 가입자 약 2700만명
