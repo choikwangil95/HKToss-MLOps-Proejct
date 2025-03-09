@@ -82,7 +82,10 @@ conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
 ```bash
 # 파이썬 패키지 설치
 pip install -r requirements.txt
+```
 
-# 트러블 슈팅 - pre-built pyarrow 설치
+### 트러블 슈팅
+```bash
+# pre-built pyarrow 설치
 conda install -c conda-forge pyarrow
 ```
