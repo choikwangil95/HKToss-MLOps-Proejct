@@ -54,7 +54,7 @@ HK Toss MLOps 중간 프로젝트
 git init
 
 # git 원격 저장소 origin 추가
-git remote add orign https://github.com/choikwangil95/HKToss-MLOps-Proejct.git
+git remote add origin https://github.com/choikwangil95/HKToss-MLOps-Proejct.git
 
 # git 로컬 저장소 동기화
 git pull origin main
@@ -82,10 +82,4 @@ conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
 ```bash
 # 파이썬 패키지 설치
 pip install -r requirements.txt
-```
-
-### 트러블 슈팅
-```bash
-# pre-built pyarrow 설치
-conda install -c conda-forge pyarrow
 ```
