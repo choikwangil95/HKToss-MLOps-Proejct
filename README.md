@@ -33,11 +33,12 @@ HK Toss MLOps 중간 프로젝트
 ## 2 프로젝트 구조
 ### 폴더구조
 ```markdown
-- 📁 datasets # 전체 데이터셋
-- 📁 features # 학습 데이터셋
-- 📁 src # 소스코드
-  ㄴ 📄 baseline.ipynb
-- 📄 requirements.txt
+📁 src # 소스코드
+ ㄴ 📁 datasets           # 전체 데이터셋
+ ㄴ 📁 features           # 학습할 데이터셋
+ ㄴ 📁 models             # 학습된 모델
+ ㄴ 📄 baseline.ipynb
+📄 requirements.txt
 ```
 
 ### 아키텍쳐
