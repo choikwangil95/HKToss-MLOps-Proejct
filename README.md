@@ -8,7 +8,7 @@
 - 이주안
 - 정혜진
 - 한예은
-- 최광일 ([https://github.com/choikwangil95](https://github.com/choikwangil95))
+- [🔗](https://github.com/choikwangil95) 최광일
 
 ### 목차
 - [1 프로젝트 개요](#1-프로젝트-개요)
@@ -89,6 +89,7 @@ pip install -r requirements.txt
 ### 브랜치 관리
 - `main` : 운영 환경
 - `develop` : 개발 환경
+- `feature` : 기능 개발
 
 ### 작업 흐름
 
