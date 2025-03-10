@@ -65,23 +65,23 @@
 ### 프로젝트 설정
 
 ```bash
-# 프로젝트 폴더 생성 및 저장소 초기화
+# 1 프로젝트 폴더 생성 및 저장소 초기화
 mkdir <folder_name>
 cd <folder_name>
 git init
 
-# 저장소 복제 및 동기화
+# 2 저장소 복제 및 동기화
 git remote add origin https://github.com/choikwangil95/HKToss-MLOps-Proejct.git
 git pull origin main
 
-# 가상환경 설정
+# 3 가상환경 설정
 conda create -n <env_name> python=3.11 pip
 conda activate <env_name>
 
-# Jupyter Notebook 커널 설정
+# 4 Jupyter Notebook 커널 설정
 conda install ipykernel --update-deps --force-reinstall
 
-# requirements 설치
+# 5 requirements 설치
 pip install -r requirements.txt
 ```
 
@@ -96,22 +96,22 @@ pip install -r requirements.txt
 ### 작업 흐름
 
 ```bash
-# 최신 develop 브랜치 동기화
+# 1 최신 develop 브랜치 동기화
 git checkout develop
 git pull origin develop
 
-# 새로운 기능 브랜치 생성
+# 2 새로운 기능 브랜치 생성
 git checkout -b <feature_branch>
 
-# 작업 후 변경 사항 저장
+# 3 작업 후 변경 사항 저장
 git add .
 git commit -m "커밋 메시지"
 
-# develop 브랜치 병합 (충돌 확인 필수)
+# 4 develop 브랜치 병합 (충돌 확인 필수)
 git checkout develop
 git pull origin develop
 git merge <feature_branch>
 
-# 원격 저장소 반영
+# 5 원격 저장소 반영
 git push origin develop
 ```
