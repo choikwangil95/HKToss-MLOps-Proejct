@@ -30,6 +30,15 @@ HK Toss MLOps 중간 프로젝트
 ### 주요기능
 - T.B.D
 
+### 데이터셋
+- [청약홈) 주택청약 지역별 분양정보](https://www.data.go.kr/data/15101046/fileData.do#/tab-layer-file)
+- [청약홈) 주택청약 가점정보](https://www.data.go.kr/data/15126242/fileData.do)
+- [청약홈) 주택청약 경쟁률](https://www.data.go.kr/data/15101048/fileData.do)
+- [청약홈) 주택청약 지역별, 연령별 신청자 정보](https://www.data.go.kr/data/15110975/fileData.do)
+- [청약홈) 주택청약 지역별, 연령별 당첨자 정보](https://www.data.go.kr/data/15110976/fileData.do)
+- [청약홈) 주택청약 지역별, 연령별, 통장별 가입현황](https://www.data.go.kr/data/15088657/fileData.do)
+- [청약홈) 주택청약 통장 가입기간별 가입현황](https://www.data.go.kr/data/15088656/fileData.do)
+
 ## 2 프로젝트 구조
 ### 폴더구조
 ```markdown
