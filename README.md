@@ -1,5 +1,7 @@
+[![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)](https://www.notion.so/1b159e9516ca802fafc0cf1d1e26aea4)
+
 # HKToss-MLOps-Proejct
-HK Toss MLOps 중간 프로젝트 [노션](https://www.notion.so/1b159e9516ca802fafc0cf1d1e26aea4)
+HK Toss MLOps 중간 프로젝트
 - 이유진
 - 이주안
 - 정혜진
