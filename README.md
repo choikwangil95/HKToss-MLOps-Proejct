@@ -10,6 +10,7 @@ HK Toss MLOps 중간 프로젝트
 - [1 프로젝트 개요](#1-프로젝트-개요)
 - [2 프로젝트 구조](#2-프로젝트-구조)
 - [3 개발환경 구성](#3-개발환경-구성)
+- [4 개발 프로세스](#4-개발-프로세스)
 
 ## 1 프로젝트 개요
 주택청약 당첨가점 예측 모델 개발
@@ -43,11 +44,11 @@ HK Toss MLOps 중간 프로젝트
 - T.B.D
 
 ## 3 개발환경 구성
-### 사전 요구사항
-- Language: Python 3.11
-- Pacakge manager: Anaconda / Miniconda
+- 1 사전 요구사항
+  - Language: Python 3.11
+  - Pacakge manager: Anaconda / Miniconda
 
-### git 설정
+- 2 git 설정
 
 ```bash
 # git 저장소 초기화
@@ -60,7 +61,7 @@ git remote add origin https://github.com/choikwangil95/HKToss-MLOps-Proejct.git
 git pull origin main
 ```
 
-### 가상환경 설정
+- 3 가상환경 설정
 ```bash
 # 가상환경 생성
 conda create -n <가상환경 이름> python=3.11 pip
@@ -69,7 +70,7 @@ conda create -n <가상환경 이름> python=3.11 pip
 conda activate <가상환경 이름>
 ```
 
-### 커널 설정
+- 4 커널 설정
 ```bash
 # jupyter notebook 커널 라이브러리 설치
 conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
@@ -78,8 +79,40 @@ conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
 # 우측 상단 커널 선택 - Python Environments 선택 -  <가상환경 이름> 선택
 ```
 
-### 패키지 설치
+- 5 패키지 설치
 ```bash
 # 파이썬 패키지 설치
 pip install -r requirements.txt
+```
+
+## 4 개발 프로세스
+- 1 원격 브랜치 동기화
+```bash
+# main 브랜치 원격 저장소 동기화
+git pull origin main
+```
+- 2 로컬 브랜치 생성
+```bash
+# main 브랜치에서 신규 브랜치 생성
+git checkout -b <브랜치 이름>
+```
+- 3 로컬 작업내용 저장
+```bash
+# 작업내용 staging에 추가
+git add .
+
+# 작업내용 local repogitory에 추가
+git commit -m "<커밋 메세지>"
+```
+- 4 로컬 작업내용 병합
+```bash
+# main 브랜치로 이동
+git checkout main
+
+# main 브랜치에 생성한 브랜치 로컬 작업내용 병합
+git merge <브랜치 이름>
+```
+- 5 작업내용 원격 병합
+```bash
+git push origin main
 ```
