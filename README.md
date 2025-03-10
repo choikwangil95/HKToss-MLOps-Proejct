@@ -86,6 +86,9 @@ pip install -r requirements.txt
 ```
 
 ## 4 개발 프로세스
+
+<img src="https://github.com/user-attachments/assets/ce06d476-6f07-4209-bf8e-3739d2801e9b" width="600px"/>
+
 - 1 원격 브랜치 동기화
 ```bash
 # main 브랜치 원격 저장소 동기화
