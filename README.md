@@ -33,15 +33,17 @@ HK Toss MLOps 중간 프로젝트
 ## 2 프로젝트 구조
 ### 폴더구조
 ```markdown
-- 📁 datasets
-- 📁 features
-- 📁 src
-  - 📄 baseline.ipynb
+- 📁 datasets # 전체 데이터셋
+- 📁 features # 학습 데이터셋
+- 📁 src # 소스코드
+  ㄴ 📄 baseline.ipynb
 - 📄 requirements.txt
 ```
 
 ### 아키텍쳐
-- T.B.D
+
+![image](https://github.com/user-attachments/assets/e8b38089-6776-4a21-8bb4-51cc1eaa441a)
+
 
 ## 3 개발환경 구성
 - 1 사전 요구사항
@@ -91,6 +93,10 @@ pip install -r requirements.txt
 
 <img src="https://github.com/user-attachments/assets/ce06d476-6f07-4209-bf8e-3739d2801e9b" width="600px"/>
 
+- 0 브랜치 관리
+  - `main`: 상용환경
+  - `develop`: 개발환경
+
 - 1 원격 브랜치 동기화
 ```bash
 # develop 브랜치 원격 저장소 동기화
@@ -98,7 +104,7 @@ git pull origin develop
 ```
 - 2 로컬 브랜치 생성
 ```bash
-# main 브랜치에서 신규 브랜치 생성
+# develop 브랜치에서 신규 브랜치 생성
 git checkout -b <브랜치 이름>
 ```
 - 3 로컬 작업내용 저장
@@ -120,7 +126,7 @@ git pull origin develop
 # develop 브랜치에 생성한 브랜치 로컬 작업내용 병합
 git merge <브랜치 이름>
 ```
-- 5 작업내용 원격 병합
+- 5 로컬 작업내용 원격 병합
 ```bash
 git push origin develop
 ```
