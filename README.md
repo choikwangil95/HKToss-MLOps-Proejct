@@ -76,7 +76,9 @@ conda activate <가상환경 이름>
 conda install -n <가상환경 이름> ipykernel --update-deps --force-reinstall
 
 # jupyter notebook 커널 설정
-# 우측 상단 커널 선택 - Python Environments 선택 -  <가상환경 이름> 선택
+# - 1 우측 상단 커널 선택
+# - 2 Python Environments 선택
+# - 3 <가상환경 이름> 선택
 ```
 
 - 5 패키지 설치
@@ -111,6 +113,9 @@ git commit -m "<커밋 메세지>"
 ```bash
 # main 브랜치로 이동
 git checkout main
+
+# 작업기간동안 다른 사람에 의해 변경되었을 main 원격 브랜치 동기화
+git pull origin main
 
 # main 브랜치에 생성한 브랜치 로컬 작업내용 병합
 git merge <브랜치 이름>
