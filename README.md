@@ -33,15 +33,17 @@ HK Toss MLOps 중간 프로젝트
 ## 2 프로젝트 구조
 ### 폴더구조
 ```markdown
-- 📁 datasets
-- 📁 features
-- 📁 src
+- 📁 datasets # 전체 데이터셋
+- 📁 features # 학습 데이터셋
+- 📁 src # 소스코드
   - 📄 baseline.ipynb
 - 📄 requirements.txt
 ```
 
 ### 아키텍쳐
-- T.B.D
+
+![image](https://github.com/user-attachments/assets/e8b38089-6776-4a21-8bb4-51cc1eaa441a)
+
 
 ## 3 개발환경 구성
 - 1 사전 요구사항
