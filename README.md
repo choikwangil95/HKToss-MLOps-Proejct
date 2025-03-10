@@ -91,6 +91,10 @@ pip install -r requirements.txt
 
 <img src="https://github.com/user-attachments/assets/ce06d476-6f07-4209-bf8e-3739d2801e9b" width="600px"/>
 
+- 0 브랜치 관리
+  - `main`: 상용환경
+  - `develop`: 개발환경
+
 - 1 원격 브랜치 동기화
 ```bash
 # develop 브랜치 원격 저장소 동기화
@@ -98,7 +102,7 @@ git pull origin develop
 ```
 - 2 로컬 브랜치 생성
 ```bash
-# main 브랜치에서 신규 브랜치 생성
+# develop 브랜치에서 신규 브랜치 생성
 git checkout -b <브랜치 이름>
 ```
 - 3 로컬 작업내용 저장
