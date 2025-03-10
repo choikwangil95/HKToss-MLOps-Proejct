@@ -48,7 +48,7 @@ HK Toss MLOps 중간 프로젝트
  ㄴ 📁 datasets             # 전체 데이터셋
  ㄴ 📁 features             # 학습할 데이터셋
  ㄴ 📁 models               # 학습된 모델
- ㄴ 📄 baseline.ipynb
+ ㄴ 📄 baseline.ipynb       # 모델 학습 코드
 📄 requirements.txt
 ```
 
