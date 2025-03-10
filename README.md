@@ -36,7 +36,7 @@ HK Toss MLOps 중간 프로젝트
 - 📁 datasets # 전체 데이터셋
 - 📁 features # 학습 데이터셋
 - 📁 src # 소스코드
-  - 📄 baseline.ipynb
+  ㄴ 📄 baseline.ipynb
 - 📄 requirements.txt
 ```
 
@@ -126,7 +126,7 @@ git pull origin develop
 # develop 브랜치에 생성한 브랜치 로컬 작업내용 병합
 git merge <브랜치 이름>
 ```
-- 5 작업내용 원격 병합
+- 5 로컬 작업내용 원격 병합
 ```bash
 git push origin develop
 ```
