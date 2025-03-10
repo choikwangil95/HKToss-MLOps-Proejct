@@ -7,7 +7,7 @@ lightgbm
 # catboost
 # mlflow
 optuna
-# joblib
+joblib
 
 # 데이터 시각화 관련 패키지
 matplotlib
@@ -18,4 +18,4 @@ shap
 # 웹 어플리케이션 관련 패키지
 # fastapi
 # uvicorn
-# streamlit
+streamlit
