@@ -4,7 +4,7 @@ HK Toss MLOps 중간 프로젝트
 - 이주안
 - 정혜진
 - 한예은
-- [최광일](https://github.com/choikwangil95)
+- 최광일 ([https://github.com/choikwangil95](https://github.com/choikwangil95))
 
 ## 목차
 - [1 프로젝트 개요](#1-프로젝트-개요)
@@ -93,8 +93,8 @@ pip install -r requirements.txt
 
 - 1 원격 브랜치 동기화
 ```bash
-# main 브랜치 원격 저장소 동기화
-git pull origin main
+# develop 브랜치 원격 저장소 동기화
+git pull origin develop
 ```
 - 2 로컬 브랜치 생성
 ```bash
@@ -111,17 +111,17 @@ git commit -m "<커밋 메세지>"
 ```
 - 4 로컬 작업내용 병합
 ```bash
-# main 브랜치로 이동
-git checkout main
+# develop 브랜치로 이동
+git checkout develop
 
-# 작업기간동안 다른 사람에 의해 변경되었을 main 원격 브랜치 동기화
-git pull origin main
+# 작업기간동안 다른 사람에 의해 변경되었을 develop 원격 브랜치 동기화
+git pull origin develop
 
-# main 브랜치에 생성한 브랜치 로컬 작업내용 병합
+# develop 브랜치에 생성한 브랜치 로컬 작업내용 병합
 git merge <브랜치 이름>
 ```
 - 5 작업내용 원격 병합
 ```bash
-git push origin main
+git push origin develop
 ```
 
