@@ -52,6 +52,8 @@ HK Toss MLOps 중간 프로젝트
 
 ### 아키텍쳐
 
+[참고: 구글 MLOps 아키텍쳐](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning?hl=ko#mlops_level_0_manual_process)
+
 ![image](https://github.com/user-attachments/assets/e8b38089-6776-4a21-8bb4-51cc1eaa441a)
 
 
