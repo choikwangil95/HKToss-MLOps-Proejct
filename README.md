@@ -28,13 +28,13 @@
 - T.B.D
 
 ### 데이터셋
-- [주택청약 지역별 분양정보](https://www.data.go.kr/data/15101046/fileData.do)
-- [주택청약 가점정보](https://www.data.go.kr/data/15126242/fileData.do)
-- [주택청약 경쟁률](https://www.data.go.kr/data/15101048/fileData.do)
-- [주택청약 지역별, 연령별 신청자 정보](https://www.data.go.kr/data/15110975/fileData.do)
-- [주택청약 지역별, 연령별 당첨자 정보](https://www.data.go.kr/data/15110976/fileData.do)
-- [주택청약 지역별, 연령별, 통장별 가입현황](https://www.data.go.kr/data/15088657/fileData.do)
-- [주택청약 통장 가입기간별 가입현황](https://www.data.go.kr/data/15088656/fileData.do)
+- [🔗](https://www.data.go.kr/data/15101046/fileData.do) 주택청약 지역별 분양정보
+- [🔗](https://www.data.go.kr/data/15126242/fileData.do) 주택청약 가점정보
+- [🔗](https://www.data.go.kr/data/15101048/fileData.do) 주택청약 경쟁률
+- [🔗](https://www.data.go.kr/data/15110975/fileData.do) 주택청약 지역별, 연령별 신청자 정보
+- [🔗](https://www.data.go.kr/data/15110976/fileData.do) 주택청약 지역별, 연령별 당첨자 정보
+- [🔗](https://www.data.go.kr/data/15088657/fileData.do) 주택청약 지역별, 연령별, 통장별 가입현황
+- [🔗](https://www.data.go.kr/data/15088656/fileData.do) 주택청약 통장 가입기간별 가입현황
   
 ## 2 프로젝트 구조
 ### 폴더구조
@@ -49,7 +49,7 @@
 
 ### 아키텍쳐
 
-- [참고: 구글 MLOps 아키텍쳐](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning?hl=ko#mlops_level_0_manual_process)
+- [🔗](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning?hl=ko#mlops_level_0_manual_process) 구글 MLOps 아키텍쳐
 
 ![image](https://github.com/user-attachments/assets/e8b38089-6776-4a21-8bb4-51cc1eaa441a)
 
