@@ -1,13 +1,14 @@
 [![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)](https://www.notion.so/1b159e9516ca802fafc0cf1d1e26aea4)
 
 # HK Toss MLOps 중간 프로젝트
+
 🏠 주택청약 당첨가점 예측 ML 모델 개발
 
 ### 팀원
-- [🔗](https://github.com/) 이유진
-- [🔗](https://github.com/) 이주안
-- [🔗](https://github.com/) 정혜진
-- [🔗](https://github.com/) 한예은
+- [🔗](https://github.com/eugeneee0126) 이유진
+- [🔗](https://github.com/Joo-an) 이주안
+- [🔗](https://github.com/yoo754) 정혜진 수정
+- [🔗](https://github.com/yeaaaun) 한예은
 - [🔗](https://github.com/choikwangil95) 최광일
 
 ### 목차
