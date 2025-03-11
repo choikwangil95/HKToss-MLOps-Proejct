@@ -7,7 +7,7 @@
 ### 팀원
 - [🔗](https://github.com/eugeneee0126) 이유진
 - [🔗](https://github.com/Joo-an) 이주안
-- [🔗](https://github.com/) 정혜진
+- [🔗](https://github.com/yoo754) 정혜진 #나중에 수정할게요
 - [🔗](https://github.com/yeaaaun) 한예은
 - [🔗](https://github.com/choikwangil95) 최광일
 
