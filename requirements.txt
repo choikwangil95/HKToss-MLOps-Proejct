@@ -9,6 +9,12 @@ lightgbm
 optuna
 joblib
 
+# 데이터 전처리 관련 패키지
+requests
+beautifulsoup4
+lxml
+html5lib
+
 # 데이터 시각화 관련 패키지
 matplotlib
 seaborn
