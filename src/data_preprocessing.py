@@ -101,7 +101,7 @@ def fill_nan_with_zero(df):
 
 def add_estate_price(df):
     # 공급금액 데이터 불러오기
-    df_estate_price = pd.read_csv("./datasets/청약매물_공급금액 (서울, 경기, 인천).csv", encoding='cp949')
+    df_estate_price = pd.read_csv("./storage/raw_data/청약매물_공급금액 (서울, 경기, 인천).csv", encoding='cp949')
     df_estate_price = df_estate_price[['공고번호', '주택형', '공급금액(최고가 기준)']]
 
     # 원본 데이터에 공급금액 칼럼 추가하기
