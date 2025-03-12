@@ -81,8 +81,7 @@ def preprocessing_applicant_rate(df):
             if row['접수건수'] == 0:
                 rate = 0
             else:
-                rate = round((row['접수건수'] - shortage) / row['접수건수'], 2)
-            # 쉼표 제거 후 float으로 변환
+                rate = round((row['공급세대수'] - shortage) / row['공급세대수'], 2)
         else:
             rate = float(str(row['경쟁률']).replace(',', ''))
 
