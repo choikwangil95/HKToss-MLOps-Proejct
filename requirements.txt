@@ -25,3 +25,6 @@ shap
 # fastapi
 # uvicorn
 streamlit
+
+# 파이썬 관련 패키지
+python-dotenv
