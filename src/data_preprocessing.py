@@ -53,7 +53,7 @@ def filter_unnecessary_columns(df):
                 unnecessary_columns.append(column)
 
     # Case 5) 그 외 기타 칼럼
-    unnecessary_columns.extend(["주택관리번호", "모델번호", '주택관리번호', '모집공고일', '당첨자발표일', '입주예정월'])
+    unnecessary_columns.extend(["주택관리번호",  '주택관리번호', '모집공고일', '당첨자발표일', '입주예정월'])
 
     # Case 5-1) 기타 칼럼 추가 제거
     unnecessary_columns.extend(['건설업체명_시공사', '사업주체명_시행사'])
