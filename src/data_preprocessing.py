@@ -119,6 +119,15 @@ def add_estate_price(df):
 
     return df
 
+def add_estate_list(df):
+    df_estate_list = pd.read_csv("./storage/raw_data/병합_청약매물_목록_정보 (서울, 경기, 인천).csv", encoding='cp949')
+    df_estate_list = df_estate_list[["공고번호", "정제_공급위치", "위도", "경도", "시도", "시군구", "읍면동"]]
+
+    df_estate_list.reset_index(drop=True).drop_duplicates(subset="공고번호", keep='first', ignore_index=True)
+
+    df = pd.merge(df, df_estate_list, on='공고번호', how='left')
+
+    return df
 
 ###############################
 
@@ -131,6 +140,7 @@ def pipeline():
     rate_transformer = FunctionTransformer(preprocessing_applicant_rate)
     nan_transformer = FunctionTransformer(fill_nan_with_zero)
     price_transformer = FunctionTransformer(add_estate_price)
+    list_transformer = FunctionTransformer(add_estate_list)
 
 
 
@@ -145,7 +155,7 @@ def pipeline():
         ("rate", rate_transformer),
         ("nan", nan_transformer),
         ("price", price_transformer),
-        ("",)
+        ("list", list_transformer)
     ])
 
     return preprocessing_pipeline
