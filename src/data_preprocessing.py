@@ -53,7 +53,7 @@ def filter_unnecessary_columns(df):
                 unnecessary_columns.append(column)
 
     # Case 5) 그 외 기타 칼럼
-    unnecessary_columns.extend(["주택관리번호", "모델번호", '주택관리번호', '공급위치우편번호', '모집공고일', '당첨자발표일', '입주예정월'])
+    unnecessary_columns.extend(["주택관리번호", "모델번호", '주택관리번호', '모집공고일', '당첨자발표일', '입주예정월'])
 
     # Case 5-1) 기타 칼럼 추가 제거
     unnecessary_columns.extend(['건설업체명_시공사', '사업주체명_시행사'])
@@ -68,11 +68,10 @@ def filter_unnecessary_columns(df):
 
 def split_housing_type(df):
     if '주택형' in df.columns:
-        # Extract the '전용면적' (before the '.') and remove leading zeros
         # . 앞부분 뽑아내는 함수 
         df['전용면적'] = df['주택형'].apply(lambda x: int(x.split('.')[0].lstrip('0')))
 
-        # Extract the '평면유형' (last character)
+        # . 뒷부분 뽑아내는 함수
         df['평면유형'] = df['주택형'].apply(lambda x: x[-1])
 
         # Drop the original '주택형' column
@@ -120,94 +119,9 @@ def add_estate_price(df):
 
     return df
 
-###############################
-
-def pre_col_gen(df):
-    # '정제_공급위치' 열 생성
-    df["정제_공급위치"] = df["공급위치"]
-    
-    # 중복된 '공고번호' 제거 (첫 번째 항목만 남김)
-    df_copy = df.reset_index(drop=True).drop_duplicates(subset="공고번호", keep='first', ignore_index=True)
-    
-    # 필요한 열만 선택
-    df_copy = df_copy[["공고번호", "공급위치", "정제_공급위치", "공급위치우편번호"]]
-    
-    return df_copy
-
-def clean_address(address):
-    # Remove parentheses and their contents
-    address = re.sub(r'\([^)]*\)', '', address)
-    # Remove unnecessary words like '블록', '일원'
-    address = re.sub(r'블록|일원|공동|일반', '', address)
-    # Remove extra spaces
-    address = re.sub(r'\s+', ' ', address).strip()
-    return address
-
-def process_address_data(df):
-    # Step 2: Get latitude and longitude using KakaoMap API
-    kakao_api_url = "https://dapi.kakao.com/v2/local/search/address.json"
-    headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
-
-    def get_lat_lon_kakao(address):
-        try:
-            response = requests.get(kakao_api_url, headers=headers, params={"query": address})
-            if response.status_code == 200:
-                result = response.json()
-                if result['documents']:
-                    lat = result['documents'][0]['y']
-                    lon = result['documents'][0]['x']
-                    return lat, lon
-            return None, None
-        except Exception as e:
-            print(f"Error fetching data for address {address}: {e}")
-            return None, None
-
-    df['위도'], df['경도'] = zip(*df['정제_공급위치'].apply(lambda x: get_lat_lon_kakao(x)))
-
-    return df
-
-def split_address(address):
-    parts = address.split(' ')
-            
-    if len(parts) >= 3:
-        sido = parts[0]
-        sigungu = parts[1]
-        eupmyeondong = parts[2] 
-        return sido, sigungu, eupmyeondong
-    else:
-        return None, None, None
-
-def update_address(row):
-    if row['시도'] and row['시군구'] and row['읍면동']:
-        return f"{row['시도']} {row['시군구']} {row['읍면동']}"
-    else:
-        return row['정제_공급위치']
-
-def lat_lon_pipeline(df, kakao_api_key):
-    df_copy = pre_col_gen(df)
-    
-    # 주소 정제
-    df_copy['정제_공급위치'] = df_copy['공급위치'].apply(clean_address)
-    
-    # Kakao API로 위도와 경도 가져오기
-    df_copy = process_address_data(df_copy, kakao_api_key)
-    
-    # 주소 분리
-    df_copy[['시도', '시군구', '읍면동']] = df_copy['정제_공급위치'].apply(lambda x: pd.Series(split_address(x)))
-    
-    # 주소 업데이트
-    df_copy['정제_공급위치'] = df_copy.apply(update_address, axis=1)
-    
-    # 위도와 경도가 None인 행만 선택하여 다시 처리
-    df_none = df_copy[(df_copy['위도'].isnull()) & (df_copy['경도'].isnull())].copy()
-    
-    if not df_none.empty:
-        df_none_processed = process_address_data(df_none, kakao_api_key)
-        df_copy.loc[df_none.index, ['위도', '경도']] = df_none_processed[['위도', '경도']]
-    
-    return df_copy
 
 ###############################
+
 
 def pipeline():
     # 데이터 전처리
@@ -217,12 +131,7 @@ def pipeline():
     rate_transformer = FunctionTransformer(preprocessing_applicant_rate)
     nan_transformer = FunctionTransformer(fill_nan_with_zero)
     price_transformer = FunctionTransformer(add_estate_price)
-    col_gen_transformer = FunctionTransformer(pre_col_gen)
-    cln_addr_transformer = FunctionTransformer(clean_address)
-    pro_addr_transformer = FunctionTransformer(process_address_data)
-    spt_addr_transformer = FunctionTransformer(split_address)
-    update_addr_transformer = FunctionTransformer(update_address)
-    lat_lon_transformer = FunctionTransformer(lat_lon_pipeline)
+
 
 
 
@@ -236,12 +145,7 @@ def pipeline():
         ("rate", rate_transformer),
         ("nan", nan_transformer),
         ("price", price_transformer),
-        ("col_gen",col_gen_transformer),
-        ("cln_addr", cln_addr_transformer),
-        ("pro_addr", pro_addr_transformer,),
-        ("spt_addr", spt_addr_transformer),
-        ("up_addr", update_addr_transformer),
-        ("lat_lon", lat_lon_transformer)
+        ("",)
     ])
 
     return preprocessing_pipeline
