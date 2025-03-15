@@ -15,6 +15,12 @@ beautifulsoup4
 lxml
 html5lib
 
+# 텍스트 전처리 관련 패키지
+transformers
+torch
+konlpy
+summa
+
 # 데이터 시각화 관련 패키지
 matplotlib
 seaborn
