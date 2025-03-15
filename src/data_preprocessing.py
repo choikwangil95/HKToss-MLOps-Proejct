@@ -48,16 +48,14 @@ def filter_unnecessary_columns(df):
         if "특별공급" in column:
             unnecessary_columns.append(column)
 
-    # Case 4) 청약접수종료일을 제외한 나머지 일자 칼럼
+    # Case 4) 청약접수시작일, 청약접수종료일을 제외한 나머지 일자 칼럼
     for column in df.columns:
-        if column != "청약접수종료일":
+        if not (column == "청약접수종료일" or column == "청약접수시작일"):
             if "시작일" in column or "종료일" in column:
                 unnecessary_columns.append(column)
 
     # Case 5) 그 외 기타 칼럼
-    unnecessary_columns.extend(
-        ["주택관리번호", "주택관리번호", "모집공고일", "당첨자발표일", "입주예정월"]
-    )
+    unnecessary_columns.extend(["주택관리번호", "주택관리번호", "입주예정월"])
 
     # Case 5-1) 기타 칼럼 추가 제거
     unnecessary_columns.extend(["건설업체명_시공사", "사업주체명_시행사"])
