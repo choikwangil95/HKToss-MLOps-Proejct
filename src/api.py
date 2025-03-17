@@ -4,6 +4,9 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 from bs4 import BeautifulSoup
 import numpy as np
+import time
+import urllib.parse
+import re
 
 # 현재 날짜
 current_date = datetime.today()
@@ -46,6 +49,11 @@ def get_estate_list(area, start_date = formatted_date):
     data = response.json()['data']
 
     df = pd.DataFrame(data)
+
+    # 데이터가 없는 경우 빈 데이터프레임을 리턴한다
+    if df.empty:
+        return df
+
     df = df.drop(columns=['PUBLIC_HOUSE_SPCLW_APPLC_AT'])
 
     getAPTLttotPblancDetail_mapping_table = {
@@ -286,3 +294,196 @@ def get_estate_detail(ID):
     df_estate_detail
 
     return df_estate_detail
+
+# 당첨가점이 발표되지 않은 최신 매물 데이터 가져오기
+def get_future_estate_list():
+    # 매물 목록 API로 가져오기
+
+    from datetime import datetime, timedelta
+
+    # api.py가 있는 상위 경로 추가
+    import pandas as pd
+    import os
+    import sys
+    sys.path.append(os.path.abspath('../../'))
+    from api import get_estate_list
+    from api import get_estate_detail
+
+    # 모집공고일이 최소 2월인 매물 찾기
+    current_date = '2025-02-01'
+
+    df_test = pd.DataFrame()
+
+    df_estate_1 = get_estate_list('서울', current_date)
+    if not df_estate_1.empty:
+        df_test  = pd.concat([df_test, df_estate_1]).reset_index(drop=True)
+
+    df_estate_2 = get_estate_list('경기', current_date)
+    if not df_estate_2.empty:
+        df_test  = pd.concat([df_test, df_estate_2]).reset_index(drop=True)
+
+    df_estate_3 = get_estate_list('인천', current_date)
+    if not df_estate_3.empty:
+        df_test  = pd.concat([df_test, df_estate_3]).reset_index(drop=True)
+
+    # 민영 주택 매물만 필터링
+    df_test = df_test[df_test['주택상세구분코드명'] == '민영'].reset_index(drop=True)
+
+    # 당첨자발표일이 현재보다 미래인 매물만 필터링
+    today = datetime.now().date()
+    df_test['당첨자발표일'] = pd.to_datetime(df_test['당첨자발표일']).dt.date
+    df_test = df_test[df_test['당첨자발표일'] > today]
+
+    # 청약 매물 목록 정보 + 당첨가점, 경쟁률 정보
+    df_test_ids = df_test['공고번호'].unique().tolist()
+
+    for id in df_test_ids:
+        df_estate_detail = get_estate_detail(id)
+
+        df_test = pd.merge(
+            df_test,
+            df_estate_detail,
+            on=['주택관리번호', '공고번호'], 
+            how='inner',
+        ).reset_index(drop=True)
+
+    return df_test
+
+
+def generate_news_url(apartment_name, apartment_ds, apartment_de):
+    base_url = "https://search.naver.com/search.naver"
+    # 괄호와 그 안의 내용 제거
+    apartment_name = re.sub(r'\([^)]*\)', '', apartment_name).strip()
+    query = f'{apartment_name} 청약'
+    params = {
+        "where": "news",
+        "query": query,
+        "sm": "tab_opt",
+        "sort": 0, # 관련도순 정렬
+        "nso": f'so:r,p:from{apartment_ds}to{apartment_de}'  # 조회기간: 모집공고일 ~ 당첨자발표일
+    }
+    return base_url + "?" + urllib.parse.urlencode(params)
+
+def crawl_naver_news(url, max_articles=3):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
+        "Accept-Language": "ko-KR,ko;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Referer": "https://www.google.com/",
+    }
+    articles = []
+    page = 1  # 페이지 번호 초기화
+
+    cnt = 0
+
+    def crawl_article_content(news_url, headers):
+        """기사 URL을 받아서 전체 내용을 크롤링하는 함수"""
+        try:
+            article_response = requests.get(news_url, headers=headers)
+            article_response.raise_for_status()  # HTTP 에러 확인
+            article_soup = BeautifulSoup(article_response.text, 'html.parser')
+
+            # 네이버 뉴스 본문 요소 선택 (기사에 따라 선택자가 다를 수 있음)
+            content_element = article_soup.select_one('#newsct_article') or article_soup.select_one('#dic_area')
+
+            if content_element:
+                return content_element.get_text(strip=True)
+            else:
+                return "기사 본문 내용을 찾을 수 없습니다."
+
+        except requests.exceptions.RequestException as e:
+            print(f"기사 내용 요청 에러 발생: {e}")
+            return "기사 내용을 가져오는 데 실패했습니다."
+        except Exception as e:
+            print(f"기사 내용 파싱 에러 발생: {e}")
+            return "기사 내용을 파싱하는 데 실패했습니다."
+    
+    while cnt < max_articles:  # 원하는 최대 기사 수에 도달할 때까지 반복
+        try:
+            # 페이지 URL 생성 (페이지 번호 적용)
+            paged_url = f"{url}&start={(page - 1) * 10 + 1}"
+            response = requests.get(paged_url, headers=headers)
+            response.raise_for_status()  # HTTP 에러 확인
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # 기사 영역 선택
+            news_areas = soup.select(".news_area")
+            
+            # 기사 영역이 없으면 종료
+            if not news_areas:
+                print("더 이상 기사 영역이 없습니다.")
+                break
+
+            for item in news_areas:
+                # "네이버 뉴스" 버튼이 있는지 확인
+                naver_news_link = item.select_one("a[href*='news.naver.com']")
+                if not naver_news_link:
+                    continue  # "네이버 뉴스" 링크가 없으면 다음 기사로 건너뜀
+                
+                title = item.select_one(".news_tit").text
+                news_url = naver_news_link['href']  # 네이버 뉴스 URL 사용
+
+                # 기사 본문 크롤링 함수 호출
+                full_content = crawl_article_content(news_url, headers)
+
+                # 키워드 필터링
+                if "청약" in full_content:  # 크롤링된 전체 내용에서 "청약" 키워드 확인
+                    articles.append({"title": title, "content": full_content, "url": news_url})
+
+                cnt += 1
+                print(f'{cnt}번 기사 - {title}')
+
+                if (cnt >= max_articles):
+                    break
+            
+            # 다음 페이지로 이동
+            page += 1
+            time.sleep(1)  # 페이지 요청 간 3초 대기
+
+        except requests.exceptions.RequestException as e:
+            print(f"요청 에러 발생: {e}")
+            break  # 요청 에러 발생 시 크롤링 중단
+        except Exception as e:
+            print(f"파싱 에러 발생: {e}")
+            break  # 파싱 에러 발생 시 크롤링 중단
+
+    return articles
+
+def get_apartment_news(df):
+    from api import generate_news_url, crawl_naver_news
+
+    df_unique = df.drop_duplicates(subset='공고번호', keep='first').reset_index(drop=True)
+    df_ids = df_unique['공고번호'].tolist()
+
+    # 결과를 저장할 리스트
+    all_news_data = []
+
+    for id in df_ids:
+        df_detail = df_unique[df_unique['공고번호'] == '2025000021'].iloc[0]
+
+        apartment_name = df_detail['주택명']
+        apartment_ds = df_detail['모집공고일']
+        apartment_de = df_detail['당첨자발표일']
+
+        # url 생성
+        url = generate_news_url(apartment_name, apartment_ds, apartment_de)
+
+        # 기사 택스트 크롤링
+        news_data = crawl_naver_news(url, max_articles=3)
+
+        # 결과 저장
+        for article in news_data:
+            article['공고번호'] = id
+            article['apartment'] = apartment_name
+        all_news_data.extend(news_data)
+
+    result_df = pd.DataFrame(all_news_data)
+    result_df = result_df[['공고번호', 'apartment', 'title', 'content', 'url']]
+    result_df
+
+    return result_df
+
+
