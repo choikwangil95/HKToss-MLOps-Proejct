@@ -156,14 +156,22 @@ def add_estate_price(df):
 
 def add_estate_list(df):
     df_estate_list = pd.read_csv(
-        "./storage/raw_data/병합_청약매물_목록_정보_위도경도추가.csv",
+        "./storage/raw_data/청약 매물 주소변환.csv",
         encoding="cp949",
     )
     df_estate_list = df_estate_list[
-        ["공고번호", "위도", "경도", "시도", "시군구", "읍면동"]
+        [
+            "공고번호",
+            "위도",
+            "경도",
+            "행정동코드",
+            "법정동코드",
+            "시도",
+            "시군구",
+            "읍면동1",
+            "읍면동2",
+        ]
     ]
-
-    df_estate_list.drop_duplicates(subset="공고번호", keep="first", inplace=True)
 
     df = pd.merge(df, df_estate_list, on="공고번호", how="left")
 
