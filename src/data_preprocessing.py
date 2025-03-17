@@ -70,12 +70,11 @@ def filter_unnecessary_columns(df):
 
 def split_housing_type(df):
     if "주택형" in df.columns:
-        # . 앞부분 뽑아내는 함수
-        df["전용면적"] = df["주택형"].apply(lambda x: int(x.split(".")[0].lstrip("0")))
 
-        # . 뒷부분 뽑아내는 함수
-        df["평면유형"] = df["주택형"].apply(lambda x: x[-1])
-
+        # 주택형 열의 데이터를 처리
+        df['전용면적'] = df['주택형'].apply(lambda x: ''.join(filter(lambda y: y.isdigit() or y == '.', x)))
+        df['전용면적'] = df['전용면적'].astype(float)
+        
         # Drop the original '주택형' column
         # [광일] 공급금액 칼럼 추가 시 주택형 컬럼이 필요해서 제거 보류
         # df = df.drop(columns=['주택형'])
@@ -205,7 +204,39 @@ def add_market_profit(df):
 
     return df
 
+def feature_pre(df):
+
+    """
+    데이터프레임 전처리 함수
+    - 불필요한 컬럼 삭제
+    - 평균당첨가점 결측값 처리 및 데이터 타입 변환
+    """
+
+    # 삭제할 컬럼 목록
+    drop_cols = [
+        "공고번호", "주택명", '공급지역명', '공급위치우편번호', '공급위치', 
+        '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', 
+        '주택형', '평균당첨가점', '최고당첨가점', '위도', '경도', 
+        '행정동코드', '시도', '시군구', '읍면동1', '읍면동2', 
+        '전용면적당 공급금액(최고가기준)'
+    ]
+    
+    # 불필요한 컬럼 삭제
+    df.drop(drop_cols, axis=1, inplace=True)
+    
+    # 평균당첨가점 결측값 처리 및 데이터 타입 변환
+    df['최저당첨가점'] = df['최저당첨가점'].str.replace("-", "0") 
+    df['최저당첨가점'].fillna(0, inplace=True) 
+    df['최저당첨가점'] = df['최저당첨가점'].astype(float)
+    
+    return df
+
+
+
+
 ###############################
+
+
 
 
 def pipeline():
@@ -218,6 +249,7 @@ def pipeline():
     price_transformer = FunctionTransformer(add_estate_price)
     list_transformer = FunctionTransformer(add_estate_list)
     profit_transformer = FunctionTransformer(add_market_profit)
+    feature_transformer = FunctionTransformer(feature_pre)
 
     # 피쳐 엔지니어링
     # Todo: 피쳐 엔지니어링 추가
@@ -231,7 +263,8 @@ def pipeline():
             ("nan", nan_transformer),
             ("price", price_transformer),
             ("list", list_transformer),
-            ('profit',  profit_transformer)
+            ('profit',  profit_transformer),
+            ('feature', feature_transformer)
         ]
     )
 
