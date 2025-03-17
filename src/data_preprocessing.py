@@ -9,7 +9,6 @@ import requests
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 
-
 import os
 from dotenv import load_dotenv
 
@@ -82,11 +81,6 @@ def split_housing_type(df):
         # df = df.drop(columns=['주택형'])
 
     return df
-
-
-import pandas as pd
-import numpy as np
-import re
 
 
 def preprocessing_applicant_rate(df):
@@ -178,6 +172,39 @@ def add_estate_list(df):
     return df
 
 
+# 시세차익 데이터 추가
+def add_market_profit(df):
+    # 모집공고일 년월별 기준으로 시세차익을 계산하기 위해 준비
+    df['모집공고일_년월'] = pd.to_datetime(df['모집공고일']).dt.strftime('%Y%m').astype(int)
+    df['전용면적당 공급금액(최고가기준)'] = df['공급금액(최고가 기준)'] / df['전용면적']
+
+    # 월별, 법정동별 실거래가 평균 데이터 불러오기
+    df_real_estate_price = pd.read_csv('./storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv', encoding='cp949')
+
+    # 각 매물별 시세차익 계산 후 저장
+    def apply_price_diff(row):
+        b_code = row['법정동코드']
+        date = row['모집공고일_년월']
+        offer_price = row['전용면적당 공급금액(최고가기준)']
+
+        mask = (df_real_estate_price['법정동코드'] == b_code) & (df_real_estate_price['년월'] == date)
+        matched_rows = df_real_estate_price[mask]
+
+        if matched_rows.empty:
+            # 매칭된 데이터가 없을 때 기본값 처리 (예: NaN)
+            return np.nan
+
+        real_price = matched_rows.iloc[0]['전용면적당 거래금액(만원)']
+        price_diff = offer_price - real_price
+
+        return price_diff
+    df['전용면적당 시세차익'] = df.apply(apply_price_diff, axis=1)
+
+    # 불필요한 칼럼 제거
+    df.drop(columns='모집공고일_년월', inplace=True)
+
+    return df
+
 ###############################
 
 
@@ -190,6 +217,7 @@ def pipeline():
     nan_transformer = FunctionTransformer(fill_nan_with_zero)
     price_transformer = FunctionTransformer(add_estate_price)
     list_transformer = FunctionTransformer(add_estate_list)
+    profit_transformer = FunctionTransformer(add_market_profit)
 
     # 피쳐 엔지니어링
     # Todo: 피쳐 엔지니어링 추가
@@ -203,6 +231,7 @@ def pipeline():
             ("nan", nan_transformer),
             ("price", price_transformer),
             ("list", list_transformer),
+            ('profit',  profit_transformer)
         ]
     )
 
