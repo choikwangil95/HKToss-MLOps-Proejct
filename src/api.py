@@ -303,11 +303,6 @@ def get_future_estate_list():
 
     # api.py가 있는 상위 경로 추가
     import pandas as pd
-    import os
-    import sys
-    sys.path.append(os.path.abspath('../../'))
-    from api import get_estate_list
-    from api import get_estate_detail
 
     # 모집공고일이 최소 2월인 매물 찾기
     current_date = '2025-02-01'
@@ -487,3 +482,80 @@ def get_apartment_news(df):
     return result_df
 
 
+def add_topic_keyword(df_future_estate_list, df_news):
+
+    # 현재 스크립트 파일의 절대 경로
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 파일 경로를 절대 경로로 변환
+    count_vectorizer_path = os.path.join(current_dir, "storage/topic_modeling/countvectorizer_model_0.0.1.pkl")
+    lda_model_path = os.path.join(current_dir, "storage/topic_modeling/lda_model_0.0.1.pkl")
+    stopwords_path = os.path.join(current_dir, "datasets/stopwords-ko.txt")
+
+    # 토픽 모델링 모델 가져오기
+    import joblib
+    count_vectorizer = joblib.load(count_vectorizer_path)
+    lda_model = joblib.load(  lda_model_path)
+
+    # 형태소 분석기 설정
+    from konlpy.tag import Okt
+    import re
+    import pandas as pd
+
+    okt = Okt()
+
+    # 불용어 정리
+    with open(stopwords_path, 'r') as f:
+        list_file = f.readlines() 
+    stopwords_default = [word[:-1] for word in list_file ]
+    stopwords_default
+    stopwords = stopwords_default # 기본
+
+    # 1. 텍스트 정제 함수 (특수문자, 숫자 제거)
+    def clean_text(text):
+        text = re.sub(r'\[.*?\]|\(.*?\)', '', text) # (), [] 괄호 안 내용 제거
+        text = re.sub(r'[^가-힣\s]', '', text)  # 한글과 공백 제외 문자 제거
+        text = re.sub(r'\s+', ' ', text).strip()  # 연속 공백 제거
+        return text
+
+    # 2. 형태소 분석을 통한 명사 추출 함수
+    def extract_nouns(text):
+        nouns = okt.nouns(text)  # 형태소만 추출
+        nouns = [word for word in nouns if word not in stopwords and len(word) > 1]  # 불용어 제거 및 한 글자 단어 제외
+        return ' '.join(nouns)
+
+    # 3. 전체 데이터 전처리
+    corpus = df_news['content'].tolist()
+    cleaned_corpus = [extract_nouns(clean_text(text)) for text in corpus]  # 정제 + 명사 추출
+
+    dtm = count_vectorizer.transform(cleaned_corpus)  # 전처리된 데이터로 DTM 생성
+
+    # 각 기사별 토픽 분포 (토픽 점수) 계산
+    doc_topic = lda_model.transform(dtm)
+
+    topic_names = [f'토픽 {i}' for i in range(1, 8)]
+
+    results = []
+    for i, topic_dist in enumerate(doc_topic):
+        top_topic = topic_dist.argmax()
+        result = {
+            '기사 번호': i + 1,
+            '주요 토픽': topic_names[top_topic],
+        }
+        # 각 토픽에 대한 점수를 소수점 4자리로 반올림하여 결과에 추가
+        result.update({topic_names[j]: round(topic_dist[j], 4) for j in range(len(topic_names))})
+        results.append(result)
+
+    df_results = pd.DataFrame(results)
+
+    # ✅ 공고번호 매핑 (df['공고번호']와 df_results를 인덱스로 연결)
+    df_results['공고번호'] = df_news['공고번호'].values
+    df_results = df_results[['공고번호', '토픽 1', '토픽 2', '토픽 3', '토픽 4', '토픽 5', '토픽 6', '토픽 7']]
+
+    # 기사가 여러개인 매물은 각 기사별 토픽 점수의 평균으로 한다.
+    df_results = df_results.groupby('공고번호').mean().reset_index()
+
+    df_future_estate_list = pd.merge(df_future_estate_list, df_results, how='inner')
+
+    return df_future_estate_list
