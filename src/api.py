@@ -7,18 +7,31 @@ import numpy as np
 import time
 import urllib.parse
 import re
-import toml
 
 import os
-
+import toml
+import streamlit as st
 from dotenv import load_dotenv
 
-#.env 파일 로드
+# ✅ .env 파일 로드 (로컬 환경)
 load_dotenv()
-secrets = toml.load("../secrets.toml")  # 루트 폴더에서 불러오기
-kakao_api_key_by_toml = secrets["general"]["kakao_api_key"]
 
-kakao_api_key = os.getenv("kakao_api_key") or kakao_api_key_by_toml
+# ✅ secrets.toml 로드 (로컬 환경만)
+kakao_api_key_by_toml = None
+if os.path.exists("../secrets.toml"):  # 파일이 존재하는 경우만 로드
+    try:
+        secrets = toml.load("../secrets.toml")
+        kakao_api_key_by_toml = secrets.get("general", {}).get("kakao_api_key")
+    except Exception as e:
+        print(f"⚠️ Warning: secrets.toml을 로드할 수 없습니다. ({e})")
+
+# ✅ 최종적으로 환경 변수 불러오기 (우선순위: .env > secrets.toml > Streamlit Secrets)
+kakao_api_key = (
+    os.getenv("kakao_api_key") or  # ✅ 로컬: .env 사용
+    kakao_api_key_by_toml or  # ✅ 로컬: secrets.toml 사용
+    st.secrets.get("general", {}).get("kakao_api_key")  # ✅ Streamlit Cloud 환경
+)
+
 
 # 현재 날짜
 current_date = datetime.today()
