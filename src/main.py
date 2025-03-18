@@ -10,10 +10,22 @@ from data_preprocessing import pipeline
 import joblib
 from feature_preprocessing import DataScaler, DataEncoder, pipeline2
 import toml
+import os
 
-# 시크릿키 지정
-secrets = toml.load("../secrets.toml")  # 루트 폴더에서 불러오기
-kakao_api_key = secrets["general"]["kakao_api_key"]
+# ✅ secrets.toml 로드 (로컬 환경만)
+kakao_api_key_by_toml = None
+if os.path.exists("../secrets.toml"):  # 파일이 존재하는 경우만 로드
+    try:
+        secrets = toml.load("../secrets.toml")
+        kakao_api_key_by_toml = secrets.get("general", {}).get("kakao_api_key")
+    except Exception as e:
+        print(f"⚠️ Warning: secrets.toml을 로드할 수 없습니다. ({e})")
+
+# ✅ 최종적으로 환경 변수 불러오기 (우선순위: .env > secrets.toml > Streamlit Secrets)
+kakao_api_key = (
+    kakao_api_key_by_toml or  # ✅ 로컬: secrets.toml 사용
+    st.secrets.get("general", {}).get("kakao_api_key")  # ✅ Streamlit Cloud 환경
+)
 
 st.header('🏡 주택청약 당첨가점 예측 서비스')
 st.divider()
