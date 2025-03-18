@@ -1,22 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestRegressor
-import joblib
 import re
-import requests
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer, StandardScaler
-
-import os
-from dotenv import load_dotenv
-
-# .env 파일 로드
-load_dotenv()
-
-kakao_api_key = os.getenv("kakao_api_key")
-
+from sklearn.preprocessing import FunctionTransformer
 
 
 def filter_unnecessary_rows(df):
@@ -58,7 +44,7 @@ def filter_unnecessary_columns(df):
     unnecessary_columns.extend(["주택관리번호", "주택관리번호", "입주예정월"])
 
     # Case 5-1) 기타 칼럼 추가 제거
-    unnecessary_columns.extend(["건설업체명_시공사", "사업주체명_시행사"])
+    unnecessary_columns.extend(["건설업체명_시공사", "사업주체명_시행사", "기사 번호", "주요 토픽"])
 
     # Case 6) 중복된 칼럼 제거
     unnecessary_columns = list(set(unnecessary_columns))
@@ -215,21 +201,40 @@ def feature_pre(df):
 
     # 삭제할 컬럼 목록
     drop_cols = [
-        # "공고번호", "주택명", 
-        '공급지역명', '공급위치우편번호', '공급위치', 
+
+        '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
         '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', 
-        '주택형', '평균당첨가점', '최고당첨가점', '위도', '경도', 
+        '주택형', 
+        # '평균당첨가점', '최고당첨가점', 
+        '위도', '경도', 
         '행정동코드', '시도', '시군구', '읍면동1', '읍면동2', 
-        '전용면적당 공급금액(최고가기준)'
+        '전용면적당 공급금액(최고가기준)', '미달여부'
     ]
     
     # 불필요한 컬럼 삭제
     df.drop(drop_cols, axis=1, inplace=True)
     
-    # 평균당첨가점 결측값 처리 및 데이터 타입 변환
-    df['최저당첨가점'] = df['최저당첨가점'].str.replace("-", "0") 
-    df['최저당첨가점'].fillna(0, inplace=True) 
+    # 당첨가점 결측값 처리 및 데이터 타입 변환
+    # 이 부분 나중에 불필요시 평균, 최고 드랍
+    df['평균당첨가점'] = df['평균당첨가점'].str.replace("-", "0")
+    df['최고당첨가점'] = df['최고당첨가점'].str.replace("-", "0")
+    df['최저당첨가점'] = df['최저당첨가점'].str.replace("-", "0")
+
+    df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
+
     df['최저당첨가점'] = df['최저당첨가점'].astype(float)
+    df['최고당첨가점'] = df['최고당첨가점'].astype(float)
+    df['평균당첨가점'] = df['평균당첨가점'].astype(float)
+
+
+    # 최고, 평균에는 -, nan 있음
+    # 최저에는 0만 있음
+
+    # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
+    df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
+
+
+
     
     return df
 
