@@ -18,6 +18,7 @@ load_dotenv()
 kakao_api_key = os.getenv("kakao_api_key")
 
 
+
 def filter_unnecessary_rows(df):
     # 민간주택만 필터링 (공공주택은 가점제 없음)
     df = df[df["주택상세구분코드명"] != "국민"]
