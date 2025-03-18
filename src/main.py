@@ -116,9 +116,9 @@ if predict_button:
 
         # ✅ GitHub에서 모델 다운로드
         if not os.path.exists(model_path):
-            st.warning("🔽 모델을 GitHub에서 다운로드 중...")
+            print("🔽 모델을 GitHub에서 다운로드 중...")
             urllib.request.urlretrieve(model_url, model_path)
-            st.success("✅ 모델 다운로드 완료!")
+            print("✅ 모델 다운로드 완료!")
 
         # ✅ 모델 불러오기
         trained_model = joblib.load(model_path)
@@ -137,9 +137,9 @@ if predict_button:
 
         # ✅ GitHub에서 파이프라인 다운로드
         if not os.path.exists(pipeline_path):
-            st.warning("🔽 파이프라인을 GitHub에서 다운로드 중...")
+            print("🔽 파이프라인을 GitHub에서 다운로드 중...")
             urllib.request.urlretrieve(pipeline_url, pipeline_path)
-            st.success("✅ 파이프라인 다운로드 완료!")
+            print("✅ 파이프라인 다운로드 완료!")
 
         # ✅ 파이프라인 불러오기
         feature_pipeline = joblib.load(pipeline_path)
