@@ -28,6 +28,8 @@ plotly
 shap
 wordcloud
 dotenv
+streamlit-folium
+folium
 
 # 웹 어플리케이션 관련 패키지
 # fastapi
