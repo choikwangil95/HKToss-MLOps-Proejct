@@ -330,16 +330,8 @@ def feature_pre(df, type):
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
     # 이 부분 나중에 불필요시 평균, 최고 드랍
-<<<<<<< HEAD
     df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
-=======
-    # df['평균당첨가점'] = df['평균당첨가점'].str.replace("-", "0")
-    # df['최고당첨가점'] = df['최고당첨가점'].str.replace("-", "0")
-    df['최저당첨가점'] = df['최저당첨가점'].str.replace("-", "0")
-
-    # df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
-    df['최저당첨가점'].fillna(0, inplace=True)
->>>>>>> dong
+    # df['최저당첨가점'].fillna(0, inplace=True)
 
     df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
     df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
