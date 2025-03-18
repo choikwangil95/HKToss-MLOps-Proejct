@@ -11,6 +11,7 @@ import joblib
 from feature_preprocessing import DataScaler, DataEncoder, pipeline2
 import toml
 import os
+import urllib
 
 # ✅ secrets.toml 로드 (로컬 환경만)
 kakao_api_key_by_toml = None
@@ -105,12 +106,43 @@ if predict_button:
     if selected_house == "주택명을 선택하세요":
         st.error("❌ 주택을 선택하세요!")
     else:
+        # ✅ 모델 저장 경로
+        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/trained_model/model_0.0.2.pkl"
+        model_path = "./storage/trained_model/model_0.0.2.pkl"
+
+        # ✅ 폴더 확인 및 생성
+        if not os.path.exists("./storage/trained_model"):
+            os.makedirs("./storage/trained_model")
+
+        # ✅ GitHub에서 모델 다운로드
+        if not os.path.exists(model_path):
+            st.warning("🔽 모델을 GitHub에서 다운로드 중...")
+            urllib.request.urlretrieve(model_url, model_path)
+            st.success("✅ 모델 다운로드 완료!")
+
+        # ✅ 모델 불러오기
+        trained_model = joblib.load(model_path)
         trained_model = joblib.load("./storage/trained_model/model_0.0.2.pkl")
+
         # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
         preprocessing_pipeline = pipeline(type='predict')
-        feature_pipeline = joblib.load(
-            "./storage/trained_pipeline/pipeline_0.0.1.pkl",
-        )
+
+        # ✅ 파이프라인 저장 경로
+        pipeline_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/trained_pipeline/pipeline_0.0.1.pkl"
+        pipeline_path = "./storage/trained_pipeline/pipeline_0.0.1.pkl"
+
+        # ✅ 폴더 확인 및 생성
+        if not os.path.exists("./storage/trained_pipeline"):
+            os.makedirs("./storage/trained_pipeline")
+
+        # ✅ GitHub에서 파이프라인 다운로드
+        if not os.path.exists(pipeline_path):
+            st.warning("🔽 파이프라인을 GitHub에서 다운로드 중...")
+            urllib.request.urlretrieve(pipeline_url, pipeline_path)
+            st.success("✅ 파이프라인 다운로드 완료!")
+
+        # ✅ 파이프라인 불러오기
+        feature_pipeline = joblib.load(pipeline_path)
 
         # ✅ 변환 실행
         df_selected_house = preprocessing_pipeline.transform(df_selected_house)
