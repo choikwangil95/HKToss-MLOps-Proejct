@@ -6,6 +6,13 @@ from folium.features import DivIcon
 from api import get_future_estate_list, add_address_code, get_dummy_estate_list
 from data_preprocessing_base import pipeline_base
 from data_preprocessing_online import pipeline_online
+from data_preprocessing import pipeline
+import joblib
+from feature_preprocessing import DataScaler, DataEncoder, pipeline2
+
+feature_pipeline = joblib.load(
+    "./storage/trained_pipeline/pipeline_0.0.1.pkl",
+)
 
 st.header('주택청약 당첨가점 예측 서비스')
 st.divider()
@@ -74,12 +81,8 @@ selected_house = st.selectbox("주택명 선택", house_list, index=0)
 
 # 선택한 주택의 상세 정보 표시
 df_selected_house = df[df["주택명"] == selected_house]
-
-# base_pipeline = pipeline_base()
-# online_pipeline = pipeline_online()
-
-# df_selected_house = base_pipeline.transform(df_selected_house)
-# df_selected_house = online_pipeline.transform(df_selected_house)
+df_selected_house
+df_selected_house = df_selected_house.drop(columns=['기사 번호', '주요 토픽'])
 
 df_selected_house_view = df_selected_house[['주택형', '순위', '거주지역', '접수건수', '경쟁률', '최저당첨가점', '평균당첨가점', '최고당첨가점']]
 st.dataframe(df_selected_house_view)
@@ -91,6 +94,18 @@ if predict_button:
     if selected_house == "주택명을 선택하세요":
         st.error("❌ 주택을 선택하세요!")
     else:
+        trained_model = joblib.load("./storage/trained_model/model_0.0.2.pkl")
+        # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
+        preprocessing_pipeline = pipeline()
+
+        # ✅ 변환 실행
+        df_selected_house = preprocessing_pipeline.transform(df_selected_house)
+
+        df_selected_house = preprocessing_pipeline.transform(df_selected_house)
+        df_selected_house = feature_pipeline.transform(df_selected_house)
+
+        st.dataframe(df_selected_house)
+
         st.success(f"✅ 예측 완료: 본인의 가점을 입력하여 당첨 가능성을 확인하세요!")
 
 
