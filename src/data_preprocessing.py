@@ -119,118 +119,183 @@ def fill_nan_with_zero(df):
 
 
 def add_estate_price(df):
-    # 공급금액 데이터 불러오기
-    # ✅ CSV 파일 경로 & GitHub 원격 URL
-    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/청약매물_공급금액%20(서울,%20경기,%20인천).csv"
-    csv_path = "./storage/raw_data/청약매물_공급금액 (서울, 경기, 인천).csv"
+    try:
+        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        file_name = "청약매물_공급금액 (서울, 경기, 인천).csv"
 
-    # ✅ 폴더 확인 및 생성
-    if not os.path.exists("./storage/raw_data"):
-        os.makedirs("./storage/raw_data")
+        # ✅ 한글 URL 인코딩 처리
+        encoded_file_name = urllib.parse.quote(file_name)
+        csv_url = base_url + encoded_file_name
 
-    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
-    if not os.path.exists(csv_path):
-        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
-        urllib.request.urlretrieve(csv_url, csv_path)
-        print("✅ CSV 다운로드 완료!")
+        # ✅ 로컬 파일 저장 경로
+        csv_path = f"./storage/raw_data/{file_name}"
 
-    # ✅ CSV 파일 로드
-    df_estate_price = pd.read_csv(csv_path, encoding="cp949")
-    df_estate_price = df_estate_price[["공고번호", "주택형", "공급금액(최고가 기준)"]]
+        # ✅ 폴더 확인 및 생성
+        if not os.path.exists("./storage/raw_data"):
+            os.makedirs("./storage/raw_data")
 
-    df_estate_price.drop_duplicates(
-        subset=["공고번호", "주택형"], keep="first", inplace=True
-    )
+        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        if not os.path.exists(csv_path):
+            print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+            urllib.request.urlretrieve(csv_url, csv_path)
+            print("✅ CSV 다운로드 완료!")
 
-    # 원본 데이터에 공급금액 칼럼 추가하기
-    df = pd.merge(df, df_estate_price, on=["공고번호", "주택형"], how="left")
+        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        try:
+            df_estate_price = pd.read_csv(csv_path, encoding="cp949")
+        except UnicodeDecodeError:
+            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            df_estate_price = pd.read_csv(csv_path, encoding="utf-8-sig")
+
+        # ✅ 필요한 컬럼만 유지
+        df_estate_price = df_estate_price[["공고번호", "주택형", "공급금액(최고가 기준)"]]
+
+        # ✅ 중복 제거
+        df_estate_price.drop_duplicates(subset=["공고번호", "주택형"], keep="first", inplace=True)
+
+        # ✅ 원본 데이터에 공급금액 칼럼 추가
+        df = pd.merge(df, df_estate_price, on=["공고번호", "주택형"], how="left")
+
+    except Exception as e:
+        print(f"🚨 오류 발생: {e}")
 
     return df
 
 
+import os
+import urllib.request
+import urllib.parse
+import pandas as pd
+
 def add_estate_list(df):
-    # ✅ CSV 파일 경로 & GitHub 원격 URL
-    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/청약%20매물%20주소변환.csv"
-    csv_path = "./storage/raw_data/청약 매물 주소변환.csv"
+    try:
+        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        file_name = "청약 매물 주소변환.csv"
 
-    # ✅ 폴더 확인 및 생성
-    if not os.path.exists("./storage/raw_data"):
-        os.makedirs("./storage/raw_data")
+        # ✅ 한글 URL 인코딩 처리
+        encoded_file_name = urllib.parse.quote(file_name)
+        csv_url = base_url + encoded_file_name
 
-    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
-    if not os.path.exists(csv_path):
-        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
-        urllib.request.urlretrieve(csv_url, csv_path)
-        print("✅ CSV 다운로드 완료!")
+        # ✅ 로컬 파일 저장 경로
+        csv_path = f"./storage/raw_data/{file_name}"
 
-    # ✅ CSV 파일 로드
-    df_estate_list = pd.read_csv(csv_path, encoding="cp949")
-    df_estate_list = df_estate_list[
-        [
-            "공고번호",
-            "위도",
-            "경도",
-            "행정동코드",
-            "법정동코드",
-            "시도",
-            "시군구",
-            "읍면동1",
-            "읍면동2",
+        # ✅ 폴더 확인 및 생성
+        if not os.path.exists("./storage/raw_data"):
+            os.makedirs("./storage/raw_data")
+
+        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        if not os.path.exists(csv_path):
+            print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+            urllib.request.urlretrieve(csv_url, csv_path)
+            print("✅ CSV 다운로드 완료!")
+
+        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        try:
+            df_estate_list = pd.read_csv(csv_path, encoding="cp949")
+        except UnicodeDecodeError:
+            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            df_estate_list = pd.read_csv(csv_path, encoding="utf-8-sig")
+
+        # ✅ 필요한 컬럼만 유지
+        df_estate_list = df_estate_list[
+            [
+                "공고번호",
+                "위도",
+                "경도",
+                "행정동코드",
+                "법정동코드",
+                "시도",
+                "시군구",
+                "읍면동1",
+                "읍면동2",
+            ]
         ]
-    ]
 
-    df = pd.merge(df, df_estate_list, on="공고번호", how="left")
+        # ✅ 원본 데이터에 주소 정보 병합
+        df = pd.merge(df, df_estate_list, on="공고번호", how="left")
+
+    except Exception as e:
+        print(f"🚨 오류 발생: {e}")
 
     return df
 
 
 # 시세차익 데이터 추가
+import os
+import urllib.request
+import urllib.parse
+import pandas as pd
+import numpy as np
+
+import os
+import urllib.request
+import urllib.parse
+import pandas as pd
+import numpy as np
+
 def add_market_profit(df):
-    # 모집공고일 년월별 기준으로 시세차익을 계산하기 위해 준비
-    df['모집공고일_년월'] = pd.to_datetime(df['모집공고일']).dt.strftime('%Y%m').astype(int)
-    df['전용면적당 공급금액(최고가기준)'] = df['공급금액(최고가 기준)'] / df['전용면적']
+    try:
+        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        file_name = "서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
 
-    # 월별, 법정동별 실거래가 평균 데이터 불러오기
-    # ✅ CSV 파일 경로 & GitHub 원격 URL
-    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
-    csv_path = "./storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
+        # ✅ 한글 URL 인코딩 처리
+        encoded_file_name = urllib.parse.quote(file_name)
+        csv_url = base_url + encoded_file_name
 
-    # ✅ 폴더 확인 및 생성
-    if not os.path.exists("./storage/raw_data"):
-        os.makedirs("./storage/raw_data")
+        # ✅ 로컬 파일 저장 경로
+        csv_path = f"./storage/raw_data/{file_name}"
 
-    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
-    if not os.path.exists(csv_path):
-        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
-        urllib.request.urlretrieve(csv_url, csv_path)
-        print("✅ CSV 다운로드 완료!")
+        # ✅ 폴더 확인 및 생성
+        if not os.path.exists("./storage/raw_data"):
+            os.makedirs("./storage/raw_data")
 
-    # ✅ CSV 파일 로드
-    df_real_estate_price = pd.read_csv(csv_path, encoding="cp949")
+        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        if not os.path.exists(csv_path):
+            try:
+                print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+                urllib.request.urlretrieve(csv_url, csv_path)
+                print("✅ CSV 다운로드 완료!")
+            except Exception as e:
+                print(f"🚨 CSV 다운로드 실패: {e}")
+                return df  # 오류 발생 시 원본 데이터 그대로 반환
 
-    # 각 매물별 시세차익 계산 후 저장
-    def apply_price_diff(row):
-        b_code = row['법정동코드']
-        date = row['모집공고일_년월']
-        offer_price = row['전용면적당 공급금액(최고가기준)']
+        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        try:
+            df_real_estate_price = pd.read_csv(csv_path, encoding="cp949")
+        except UnicodeDecodeError:
+            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            df_real_estate_price = pd.read_csv(csv_path, encoding="utf-8-sig")
 
-        mask = (df_real_estate_price['법정동코드'] == b_code) & (df_real_estate_price['년월'] == date)
-        matched_rows = df_real_estate_price[mask]
+        # ✅ 모집공고일을 년월 형태로 변환
+        df['모집공고일_년월'] = pd.to_datetime(df['모집공고일'], errors='coerce').dt.strftime('%Y%m').astype(float)
 
-        if matched_rows.empty:
-            # 매칭된 데이터가 없을 때 기본값 처리 (예: NaN)
-            return np.nan
+        # ✅ 전용면적이 0이 아닌 경우만 계산 (ZeroDivisionError 방지)
+        df['전용면적당 공급금액(최고가기준)'] = np.where(
+            df['전용면적'] > 0,
+            df['공급금액(최고가 기준)'] / df['전용면적'],
+            0  # 전용면적이 0이면 기본값 0으로 설정
+        )
 
-        real_price = matched_rows.iloc[0]['전용면적당 거래금액(만원)']
-        price_diff = offer_price - real_price
+        # ✅ 시세차익 계산을 위해 매물 데이터와 실거래가 데이터 병합 (속도 최적화)
+        df = df.merge(df_real_estate_price, left_on=['법정동코드', '모집공고일_년월'],
+                      right_on=['법정동코드', '년월'], how='left')
 
-        return price_diff
-    df['전용면적당 시세차익'] = df.apply(apply_price_diff, axis=1)
+        # ✅ 시세차익 계산 (NaN 방지)
+        df['전용면적당 거래금액(만원)'] = df['전용면적당 거래금액(만원)'].fillna(0)  # NaN 값 0으로 변환
+        df['전용면적당 시세차익'] = df['전용면적당 공급금액(최고가기준)'] - df['전용면적당 거래금액(만원)']
 
-    # 불필요한 칼럼 제거
-    df.drop(columns='모집공고일_년월', inplace=True)
+        # ✅ 불필요한 칼럼 정리 (NaN 방지)
+        df.drop(columns=['모집공고일_년월', '년월', '전용면적당 거래금액(만원)'], inplace=True, errors='ignore')
+
+    except Exception as e:
+        print(f"🚨 오류 발생: {e}")
 
     return df
+
+
 
 def feature_pre(df, type):
 
