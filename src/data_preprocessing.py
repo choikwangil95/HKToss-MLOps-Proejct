@@ -21,8 +21,7 @@ def filter_unnecessary_columns(df):
 
     # Case 1) 칼럼 값이 하나라면 불필요 칼럼
     for column in df.columns:
-        if len(df[column].unique()) == 1:
-            unnecessary_columns.append(column)
+        unnecessary_columns.extend(['주택구분코드', '주택구분코드명', '주택상세구분코드', '주택상세구분코드명', '분양구분코드', '분양구분코드명'])
 
     # Case 2) 홈페이지 주소, 문의처 칼럼
     for column in df.columns:
@@ -191,7 +190,7 @@ def add_market_profit(df):
 
     return df
 
-def feature_pre(df):
+def feature_pre(df, type):
 
     """
     데이터프레임 전처리 함수
@@ -216,26 +215,23 @@ def feature_pre(df):
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
     # 이 부분 나중에 불필요시 평균, 최고 드랍
-    df['평균당첨가점'] = df['평균당첨가점'].str.replace("-", "0")
-    df['최고당첨가점'] = df['최고당첨가점'].str.replace("-", "0")
-    df['최저당첨가점'] = df['최저당첨가점'].str.replace("-", "0")
-
     df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
+
+    df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
+    df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
+    df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
 
     df['최저당첨가점'] = df['최저당첨가점'].astype(float)
     df['최고당첨가점'] = df['최고당첨가점'].astype(float)
     df['평균당첨가점'] = df['평균당첨가점'].astype(float)
 
-
     # 최고, 평균에는 -, nan 있음
     # 최저에는 0만 있음
 
     # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
-    df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
+    if type == 'train':
+        df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
 
-
-
-    
     return df
 
 
@@ -246,7 +242,7 @@ def feature_pre(df):
 
 
 
-def pipeline():
+def pipeline(type):
     # 데이터 전처리
     filter_rows_transformer = FunctionTransformer(filter_unnecessary_rows)
     filter_columns_transformer = FunctionTransformer(filter_unnecessary_columns)
@@ -256,7 +252,7 @@ def pipeline():
     price_transformer = FunctionTransformer(add_estate_price)
     list_transformer = FunctionTransformer(add_estate_list)
     profit_transformer = FunctionTransformer(add_market_profit)
-    feature_transformer = FunctionTransformer(feature_pre)
+    feature_transformer = FunctionTransformer(feature_pre,  kw_args={'type': type})
 
     # 피쳐 엔지니어링
     # Todo: 피쳐 엔지니어링 추가

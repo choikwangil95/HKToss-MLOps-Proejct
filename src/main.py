@@ -10,14 +10,10 @@ from data_preprocessing import pipeline
 import joblib
 from feature_preprocessing import DataScaler, DataEncoder, pipeline2
 
-feature_pipeline = joblib.load(
-    "./storage/trained_pipeline/pipeline_0.0.1.pkl",
-)
-
-st.header('주택청약 당첨가점 예측 서비스')
+st.header('🏡 주택청약 당첨가점 예측 서비스')
 st.divider()
 
-st.subheader('1 공고중인 주택청약 매물 목록')
+st.subheader('1 공고중인 주택청약 매물 목록 (더미데이터)')
 
 # """ 예측 청약 매물 데이터 테이블 보여주기 """
 # df =get_future_estate_list()
@@ -80,9 +76,7 @@ selected_house = st.selectbox("주택명 선택", house_list, index=0)
 # st.write(f"선택된 주택명: **{selected_house}**")
 
 # 선택한 주택의 상세 정보 표시
-df_selected_house = df[df["주택명"] == selected_house]
-df_selected_house
-df_selected_house = df_selected_house.drop(columns=['기사 번호', '주요 토픽'])
+df_selected_house = df[df["주택명"] == selected_house].reset_index(drop=True)
 
 df_selected_house_view = df_selected_house[['주택형', '순위', '거주지역', '접수건수', '경쟁률', '최저당첨가점', '평균당첨가점', '최고당첨가점']]
 st.dataframe(df_selected_house_view)
@@ -96,17 +90,25 @@ if predict_button:
     else:
         trained_model = joblib.load("./storage/trained_model/model_0.0.2.pkl")
         # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
-        preprocessing_pipeline = pipeline()
+        preprocessing_pipeline = pipeline(type='predict')
+        feature_pipeline = joblib.load(
+            "./storage/trained_pipeline/pipeline_0.0.1.pkl",
+        )
 
         # ✅ 변환 실행
         df_selected_house = preprocessing_pipeline.transform(df_selected_house)
-
-        df_selected_house = preprocessing_pipeline.transform(df_selected_house)
         df_selected_house = feature_pipeline.transform(df_selected_house)
 
-        st.dataframe(df_selected_house)
+        # 모델 예측 결과
+        predicted = trained_model.predict(df_selected_house)
+
+        # 예측된 결과 데이터 프레임으로 보여주기
+        df_selected_house_predicted_view = df_selected_house_view[['주택형', '순위', '거주지역', '접수건수', '경쟁률']]
+        df_selected_house_predicted_view['예측된 최저 당첨가점'] = predicted
 
         st.success(f"✅ 예측 완료: 본인의 가점을 입력하여 당첨 가능성을 확인하세요!")
+
+        st.dataframe(df_selected_house_predicted_view)
 
 
 st.subheader('3 사용자의 주택청약 당첨 가능성 확인')

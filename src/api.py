@@ -859,9 +859,9 @@ def get_dummy_estate_list():
     import pandas as pd
     import os
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스.csv")
+    file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스2.csv")
 
-    df = pd.read_csv(file_path, encoding='cp949')
+    df = pd.read_csv(file_path)
 
     # ✅ 모집공고일을 datetime 형식으로 변환
     df["모집공고일"] = pd.to_datetime(df["모집공고일"])
