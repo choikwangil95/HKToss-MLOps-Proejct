@@ -3,6 +3,8 @@ import numpy as np
 import re
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
+import os
+import urllib.request
 
 
 def filter_unnecessary_rows(df):
@@ -118,9 +120,22 @@ def fill_nan_with_zero(df):
 
 def add_estate_price(df):
     # 공급금액 데이터 불러오기
-    df_estate_price = pd.read_csv(
-        "./storage/raw_data/청약매물_공급금액 (서울, 경기, 인천).csv", encoding="cp949"
-    )
+    # ✅ CSV 파일 경로 & GitHub 원격 URL
+    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/청약매물_공급금액%20(서울,%20경기,%20인천).csv"
+    csv_path = "./storage/raw_data/청약매물_공급금액 (서울, 경기, 인천).csv"
+
+    # ✅ 폴더 확인 및 생성
+    if not os.path.exists("./storage/raw_data"):
+        os.makedirs("./storage/raw_data")
+
+    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+    if not os.path.exists(csv_path):
+        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(csv_url, csv_path)
+        print("✅ CSV 다운로드 완료!")
+
+    # ✅ CSV 파일 로드
+    df_estate_price = pd.read_csv(csv_path, encoding="cp949")
     df_estate_price = df_estate_price[["공고번호", "주택형", "공급금액(최고가 기준)"]]
 
     df_estate_price.drop_duplicates(
@@ -134,10 +149,22 @@ def add_estate_price(df):
 
 
 def add_estate_list(df):
-    df_estate_list = pd.read_csv(
-        "./storage/raw_data/청약 매물 주소변환.csv",
-        encoding="cp949",
-    )
+    # ✅ CSV 파일 경로 & GitHub 원격 URL
+    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/청약%20매물%20주소변환.csv"
+    csv_path = "./storage/raw_data/청약 매물 주소변환.csv"
+
+    # ✅ 폴더 확인 및 생성
+    if not os.path.exists("./storage/raw_data"):
+        os.makedirs("./storage/raw_data")
+
+    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+    if not os.path.exists(csv_path):
+        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(csv_url, csv_path)
+        print("✅ CSV 다운로드 완료!")
+
+    # ✅ CSV 파일 로드
+    df_estate_list = pd.read_csv(csv_path, encoding="cp949")
     df_estate_list = df_estate_list[
         [
             "공고번호",
@@ -164,7 +191,22 @@ def add_market_profit(df):
     df['전용면적당 공급금액(최고가기준)'] = df['공급금액(최고가 기준)'] / df['전용면적']
 
     # 월별, 법정동별 실거래가 평균 데이터 불러오기
-    df_real_estate_price = pd.read_csv('./storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv', encoding='cp949')
+    # ✅ CSV 파일 경로 & GitHub 원격 URL
+    csv_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
+    csv_path = "./storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
+
+    # ✅ 폴더 확인 및 생성
+    if not os.path.exists("./storage/raw_data"):
+        os.makedirs("./storage/raw_data")
+
+    # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+    if not os.path.exists(csv_path):
+        print("🔽 CSV 데이터를 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(csv_url, csv_path)
+        print("✅ CSV 다운로드 완료!")
+
+    # ✅ CSV 파일 로드
+    df_real_estate_price = pd.read_csv(csv_path, encoding="cp949")
 
     # 각 매물별 시세차익 계산 후 저장
     def apply_price_diff(row):
