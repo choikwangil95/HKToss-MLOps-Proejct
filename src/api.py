@@ -854,3 +854,24 @@ def add_market_profit(df):
     df.drop(columns='모집공고일_년월', inplace=True)
 
     return df
+
+def get_dummy_estate_list():
+    import pandas as pd
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스.csv")
+
+    df = pd.read_csv(file_path, encoding='cp949')
+
+    # ✅ 모집공고일을 datetime 형식으로 변환
+    df["모집공고일"] = pd.to_datetime(df["모집공고일"])
+
+    # ✅ 2025-03-12 이상인 매물만 필터링
+    filtered_df = df[df["모집공고일"] >= "2025-01-01"]
+
+    # 당첨가점 Nan 처리
+    filtered_df['최저당첨가점'] = np.nan
+    filtered_df['최고당첨가점'] = np.nan
+    filtered_df['평균당첨가점'] = np.nan
+
+    return filtered_df
