@@ -8,6 +8,14 @@ import time
 import urllib.parse
 import re
 
+import os
+
+from dotenv import load_dotenv
+
+#.env 파일 로드
+load_dotenv()
+kakao_api_key = os.getenv("kakao_api_key")
+
 # 현재 날짜
 current_date = datetime.today()
 
@@ -482,7 +490,7 @@ def get_apartment_news(df):
     return result_df
 
 
-def add_topic_keyword(df_future_estate_list, df_news):
+def add_topic_keyword(df_future_estate_list):
 
     # 현재 스크립트 파일의 절대 경로
     import os
@@ -506,8 +514,8 @@ def add_topic_keyword(df_future_estate_list, df_news):
     okt = Okt()
 
     # 불용어 정리
-    with open(stopwords_path, 'r') as f:
-        list_file = f.readlines() 
+    with open('./datasets/stopwords-ko.txt', 'r', encoding='utf-8') as f:
+        list_file = f.readlines()
     stopwords_default = [word[:-1] for word in list_file ]
     stopwords_default
     stopwords = stopwords_default # 기본
@@ -524,6 +532,9 @@ def add_topic_keyword(df_future_estate_list, df_news):
         nouns = okt.nouns(text)  # 형태소만 추출
         nouns = [word for word in nouns if word not in stopwords and len(word) > 1]  # 불용어 제거 및 한 글자 단어 제외
         return ' '.join(nouns)
+
+    # 뉴스 기사 크롤링
+    df_news = get_apartment_news(df_future_estate_list)
 
     # 3. 전체 데이터 전처리
     corpus = df_news['content'].tolist()
@@ -559,3 +570,287 @@ def add_topic_keyword(df_future_estate_list, df_news):
     df_future_estate_list = pd.merge(df_future_estate_list, df_results, how='inner')
 
     return df_future_estate_list
+
+def add_address_by_apartname(apartname):
+  kakao_api_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+  headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
+
+  response = requests.get(kakao_api_url, headers=headers, params={"query": apartname})
+  data = response.json()['documents']
+  has_data = len(data) != 0
+  
+  if has_data:
+    address = data[0]['address_name']
+    return address
+  
+  return ''
+
+def get_lat_lon_kakao(address):
+    kakao_api_url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
+
+    try:
+        response = requests.get(kakao_api_url, headers=headers, params={"query": address})
+        # 요청 실패한경우
+        if response.status_code != 200:
+            return None
+        
+        result = response.json()
+        data = result['documents']
+        has_data = len(data) != 0
+
+        # 주소 데이터 없는경우
+        if not has_data:
+            print(f'{address} - 주소 데이터가 없습니다.')
+            return None
+        
+        result = data[0]['address']
+
+        region_depth_3_h = result['region_3depth_h_name'] # 동
+        region_depth_3 = result['region_3depth_name'] # 동
+
+        # 동 데이터 없는 경우
+        if region_depth_3_h == '' and region_depth_3 == '':
+            print(f'{address} - 동 데이터가 없습니다.')
+            return None
+
+        return result
+    except Exception as e:
+        print(f"Error fetching data for address {address}: {e}")
+        return None
+
+def process_address_data(address, address_by_apartname, verbose=False):
+    """카카오맵 API를 사용해 위도, 경도 및 행정정보를 추출하는 함수"""
+    
+    try:
+        # 1️⃣ 카카오맵 API 사용해서 주소 데이터 가져오기
+        data = get_lat_lon_kakao(address)
+
+        # 2️⃣ 공급위치로 주소 못 얻는 경우, 주택명 기반으로 재시도
+        if not data:
+            data = get_lat_lon_kakao(address_by_apartname)
+
+        # 3️⃣ 그래도 없는 경우 → NaN 처리
+        if not data:
+            if verbose:
+                print(f"[주소 변환 실패] '{address}', '{address_by_apartname}' → NaN 값 반환")
+            return None, None, None, None, None, None, None, None  # 8개 반환 보장
+
+        # 4️⃣ 정상적인 데이터 추출
+        lat = data.get('y', None)
+        lon = data.get('x', None)
+        h_code = data.get('h_code', None)
+        b_code = data.get('b_code', None)
+        region_depth_1 = data.get('region_1depth_name', None)  # 도
+        region_depth_2 = data.get('region_2depth_name', None)  # 시,구
+        region_depth_3_h = data.get('region_3depth_h_name', None)  # 행정동
+        region_depth_3 = data.get('region_3depth_name', None)  # 법정동
+
+        # 5️⃣ 필요할 때만 로그 출력 (verbose=True 설정 시)
+        if verbose:
+            print(f"[주소 변환 성공] '{address}' → {lat}, {lon}, {h_code}, {b_code}, {region_depth_1}, {region_depth_2}, {region_depth_3_h}, {region_depth_3}")
+
+        return lat, lon, h_code, b_code, region_depth_1, region_depth_2, region_depth_3_h, region_depth_3
+    
+    except Exception as e:
+        print(f"[오류 발생] {e} (address='{address}', address_by_apartname='{address_by_apartname}')")
+        return None, None, None, None, None, None, None, None  # 오류 발생 시도 안전하게 8개 반환
+
+
+def add_address_code(df_future_estate_list):
+    df_future_estate_list_unique = df_future_estate_list.drop_duplicates(subset='공고번호', keep='first')
+    df_future_estate_list_unique
+
+    # 아파트명 전처리 함수
+    def preprocess_apartname(df):
+
+        # 특정 키워드 리스트 (정확한 일치 단어 제거)
+        custom_stopwords = {}
+
+        # 특정 단어를 포함하는 단어 제거 (예: '지구'가 포함된 단어 제거)
+        remove_if_contains = ['우선' , '분양' ,'후', '잔여세대', '모집공고', '공급', '세대', '-', '전환', '블록', '공공']
+
+        # ✅ 괄호와 괄호 안의 텍스트 모두 제거하는 함수
+        def remove_parentheses(text):
+            """괄호와 괄호 안의 텍스트 모두 제거"""
+            return re.sub(r'\(.*?\)', '', text).strip()
+
+        # ✅ 필터링 조건 함수
+        def filter_conditions(word):
+            """단어가 제거 대상인지 확인"""
+            # if re.search(r'[A-Za-z]', word):  # 영어 포함 단어 제거
+            #     return False
+            if word in custom_stopwords:  # 특정 키워드 제거
+                return False
+            if any(sub in word for sub in remove_if_contains):  # 특정 단어 포함 단어 제거
+                return False
+            return True  # 모든 조건을 통과하면 유지
+
+        # ✅ 정제 함수
+        def clean_name(address):
+            # 괄호와 괄호 안의 텍스트 제거
+            address = remove_parentheses(address)
+
+            words = address.split()  # 띄어쓰기 기준으로 분리
+            cleaned_words = [word for word in words if filter_conditions(word)]  # 필터링 적용
+            cleaned_address = ' '.join(cleaned_words)  # 정제된 단어들 다시 합치기
+
+            # 쉼표가 있으면 첫 번째 단어만 반환
+            if ',' in cleaned_address:
+                return cleaned_address.split(',')[0]
+            return cleaned_address  # 쉼표가 없으면 그대로 반환
+
+        # ✅ 주소 정제 적용
+        df['정제된주택명'] = df['공급지역명'] + ' ' + df['주택명'].apply(clean_name)
+
+        return df
+
+    # 주소 전처리 함수
+    def preprocess_address(df):
+        # 특정 키워드 리스트 (정확한 일치 단어 제거)
+        custom_stopwords = {'내', '외'}
+
+        # 특정 단어를 포함하는 단어 제거 (예: '지구'가 포함된 단어 제거)
+        remove_if_contains = ['지구', '사업', '일원', '일대', '블록', '공동', '일반', '개발', '필지', '구역', '역세권', '블럭', '주상복합', '시티', '신도시', '종전', '부동산']
+
+        # ✅ 괄호와 괄호 안의 텍스트 모두 제거하는 함수
+        def remove_parentheses(text):
+            """괄호와 괄호 안의 텍스트 모두 제거"""
+            return re.sub(r'\(.*?\)', '', text).strip()
+
+        # ✅ 필터링 조건 함수
+        def filter_conditions(word):
+            """단어가 제거 대상인지 확인"""
+            if re.search(r'[A-Za-z]', word):  # 영어 포함 단어 제거
+                return False
+            if word in custom_stopwords:  # 특정 키워드 제거
+                return False
+            if any(sub in word for sub in remove_if_contains):  # 특정 단어 포함 단어 제거
+                return False
+            return True  # 모든 조건을 통과하면 유지
+
+        # ✅ 정제 함수
+        def clean_address(address):
+            # 괄호와 괄호 안의 텍스트 제거
+            address = remove_parentheses(address)
+
+            words = address.split()  # 띄어쓰기 기준으로 분리
+            cleaned_words = [word for word in words if filter_conditions(word)]  # 필터링 적용
+            cleaned_address = ' '.join(cleaned_words)  # 정제된 단어들 다시 합치기
+
+            # 쉼표가 있으면 첫 번째 단어만 반환
+            if ',' in cleaned_address:
+                return cleaned_address.split(',')[0]
+            return cleaned_address  # 쉼표가 없으면 그대로 반환
+
+        # ✅ 주소 정제 적용
+        df['정제된주소'] = df['공급위치'].apply(clean_address)
+
+        return df
+
+    # 아파트명, 주소 전처리
+    df_future_estate_list_unique = preprocess_apartname(df_future_estate_list_unique)
+    df_future_estate_list_unique = preprocess_address(df_future_estate_list_unique)
+
+    # 주택명으로 공급위치 찾기
+    df_future_estate_list_unique['공급위치 by 주택명'] = df_future_estate_list_unique['정제된주택명'].apply(add_address_by_apartname)
+    
+    # 공급위치로 위도, 경도, 법정동 코드 가져와서 피쳐에 추가하기
+    df_future_estate_list_unique[['위도', '경도', '행정동코드', '법정동코드', '시도', '시군구', '읍면동1', '읍면동2']] = df_future_estate_list_unique.apply(
+        lambda x: process_address_data(x['정제된주소'], x['공급위치 by 주택명']), axis=1, result_type='expand'
+    )
+    df_future_estate_list_unique = df_future_estate_list_unique[['공고번호', '위도', '경도', '행정동코드', '법정동코드', '시도', '시군구', '읍면동1', '읍면동2']]
+
+    # 매물 목록에 머지해주기
+    df_future_estate_list = pd.merge(df_future_estate_list, df_future_estate_list_unique, how='inner')
+    
+    return df_future_estate_list
+
+def get_estate_price(estate_id):
+    query = f'houseManageNo={estate_id}&pblancNo={estate_id}'
+    URL = f'https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?{query}'
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36'
+    }
+
+    import requests
+    from bs4 import BeautifulSoup
+
+    response = requests.get(URL, headers=headers)
+    response.content
+
+    # BeautifulSoup으로 HTML 파싱
+    soup = BeautifulSoup(response.content, 'lxml')
+
+    # 공급금액 존재하는 테이블 찾기
+    table = soup.findAll('table')[-2]
+
+    # DataFrame 생성
+    df = pd.read_html(str(table), converters={0:str, 1:str, 2:str})[0] # converters: 각 컬럼의 데이터를 문자열로 변환
+
+    return df
+
+def add_apply_price(df_future_estate_list):
+
+    # 청약 매물 목록 id 가져오기
+    estate_ids = df_future_estate_list['공고번호'].unique().tolist()
+
+    # 빈 문자열 존재하여 제거
+    df_future_estate_list['주택형'] = df_future_estate_list['주택형'].str.strip()
+
+    for estate_id in estate_ids:
+        try:
+            # 청약 매물 공급금액 정보 가져오기
+            df_estate_price = get_estate_price(int(estate_id))
+
+            # 청약 매물 목록 데이터에 공급금액(최고가 기준) 컬럼 추가
+            for index in range(len(df_estate_price)):
+                estate_type = str(df_estate_price.loc[index, '주택형']).strip()
+                estate_price = float(df_estate_price.loc[index, '공급금액(최고가 기준)']) * 10000
+
+                mask = (df_future_estate_list['공고번호'] == estate_id) & (df_future_estate_list['주택형'] == estate_type)
+                df_future_estate_list.loc[mask, '공급금액(최고가 기준)'] = estate_price
+        except:
+            print(f'{estate_id} 데이터를 가져오는데 실패했습니다.')
+
+    return df_future_estate_list
+
+# 시세차익 데이터 추가
+def add_market_profit(df):
+    # 모집공고일 년월별 기준으로 시세차익을 계산하기 위해 준비
+    df['모집공고일_년월'] = pd.to_datetime(df['모집공고일']).dt.strftime('%Y%m').astype(int)
+    df['전용면적당 공급금액(최고가기준)'] = df['공급금액(최고가 기준)'] / df['전용면적']
+
+    # 월별, 법정동별 실거래가 평균 데이터 불러오기
+    # 현재 스크립트 파일의 절대 경로
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    real_estate_price_path = os.path.join(current_dir, "storage/raw_data/서울경기인천_전체_월별_법정동별_실거래가_평균.csv")
+
+    df_real_estate_price = pd.read_csv(real_estate_price_path, encoding='cp949')
+
+    # 각 매물별 시세차익 계산 후 저장
+    def apply_price_diff(row):
+        b_code = row['법정동코드']
+        date = row['모집공고일_년월']
+        offer_price = row['전용면적당 공급금액(최고가기준)']
+
+        mask = (df_real_estate_price['법정동코드'] == b_code) & (df_real_estate_price['년월'] == date)
+        matched_rows = df_real_estate_price[mask]
+
+        if matched_rows.empty:
+            # 매칭된 데이터가 없을 때 기본값 처리 (예: NaN)
+            return np.nan
+
+        real_price = matched_rows.iloc[0]['전용면적당 거래금액(만원)']
+        price_diff = offer_price - real_price
+
+        return price_diff
+    df['전용면적당 시세차익'] = df.apply(apply_price_diff, axis=1)
+
+    # 불필요한 칼럼 제거
+    df.drop(columns='모집공고일_년월', inplace=True)
+
+    return df
