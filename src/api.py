@@ -7,6 +7,7 @@ import numpy as np
 import time
 import urllib.parse
 import re
+import toml
 
 import os
 
@@ -14,7 +15,10 @@ from dotenv import load_dotenv
 
 #.env 파일 로드
 load_dotenv()
-kakao_api_key = os.getenv("kakao_api_key")
+secrets = toml.load("../secrets.toml")  # 루트 폴더에서 불러오기
+kakao_api_key_by_toml = secrets["general"]["kakao_api_key"]
+
+kakao_api_key = os.getenv("kakao_api_key") or kakao_api_key_by_toml
 
 # 현재 날짜
 current_date = datetime.today()

@@ -9,6 +9,11 @@ from data_preprocessing_online import pipeline_online
 from data_preprocessing import pipeline
 import joblib
 from feature_preprocessing import DataScaler, DataEncoder, pipeline2
+import toml
+
+# 시크릿키 지정
+secrets = toml.load("../secrets.toml")  # 루트 폴더에서 불러오기
+kakao_api_key = secrets["general"]["kakao_api_key"]
 
 st.header('🏡 주택청약 당첨가점 예측 서비스')
 st.divider()
@@ -115,6 +120,7 @@ st.subheader('3 사용자의 주택청약 당첨 가능성 확인')
 
 # 사용자로부터 당첨 가점 입력 받기 (0~100점 범위)
 score = st.number_input("당첨 가점을 입력하세요", min_value=0, max_value=100, step=1)
+st.text('진행중..🏡')
 
 # 입력된 점수 출력
 # st.write(f"입력된 당첨 가점: **{score}점**")
