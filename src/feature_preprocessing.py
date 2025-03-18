@@ -54,9 +54,21 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import LabelEncoder
 
+import os
+import urllib.request
+import joblib
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import LabelEncoder
+
 class DataEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self, encoder_url="https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/label_encoder.pkl",
-                 one_hot_url="https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/one_hot_columns.pkl"):
+    def __init__(self, encoder_url=None, one_hot_url=None):
+        # GitHub 파일 URL (디폴트는 None으로 설정)
+        if encoder_url is None:
+            encoder_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/label_encoder.pkl"
+        if one_hot_url is None:
+            one_hot_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/one_hot_columns.pkl"
+        
         # GitHub 파일 URL
         self.encoder_url = encoder_url
         self.one_hot_url = one_hot_url
@@ -140,6 +152,7 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         X_encoded = X_encoded.reindex(columns=self.one_hot_categories + ['법정동코드_encoded'], fill_value=0)
 
         return X_encoded
+
 
 
 
