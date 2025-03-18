@@ -47,18 +47,25 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import LabelEncoder
 import urllib.parse
 
+import os
+import urllib.request
+import joblib
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import LabelEncoder
+
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url="https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/label_encoder.pkl",
                  one_hot_url="https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/one_hot_columns.pkl"):
-        # ✅ GitHub 파일 URL
+        # GitHub 파일 URL
         self.encoder_url = encoder_url
         self.one_hot_url = one_hot_url
 
-        # ✅ 로컬 경로 설정
+        # 로컬 경로 설정
         self.encoder_path = "./storage/label_encoder.pkl"
         self.one_hot_path = "./storage/one_hot_columns.pkl"
 
-        # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
+        # 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
         self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업',
                                 '공공주택지구', '대규모택지개발지구', '수도권내민영공공주택지구',
@@ -79,20 +86,20 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         X = X.copy()
         X['법정동코드'] = X['법정동코드'].astype(str)
 
-        # ✅ 'unknown'을 추가하여 새로운 값 처리 가능하도록 함
+        # 'unknown'을 추가하여 새로운 값 처리 가능하도록 함
         unique_labels = list(X['법정동코드'].unique())
         unique_labels.append('unknown')
 
         self.label_encoder.fit(unique_labels)
         self.fitted = True
 
-        # ✅ LabelEncoder 저장 (추후 로드 가능)
+        # LabelEncoder 저장 (추후 로드 가능)
         joblib.dump(self.label_encoder, self.encoder_path)
 
-        # ✅ 원핫 인코딩 수행
+        # 원핫 인코딩 수행
         X_encoded = pd.get_dummies(X, columns=self.one_hot_columns, dummy_na=False)
 
-        # ✅ 원핫 인코딩된 컬럼을 `.pkl`로 저장
+        # 원핫 인코딩된 컬럼을 `.pkl`로 저장
         self.one_hot_categories = X_encoded.columns.tolist()
         joblib.dump(self.one_hot_categories, self.one_hot_path)
 
@@ -102,27 +109,27 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         X = X.copy()
         X['법정동코드'] = X['법정동코드'].astype(str)
 
-        # ✅ LabelEncoder 로드
+        # LabelEncoder 로드
         if not os.path.exists(self.encoder_path):
             print(f"⚠️ {self.encoder_path} 파일이 없습니다. GitHub에서 다운로드합니다...")
             self.download_from_github(self.encoder_url, self.encoder_path)
 
         self.label_encoder = joblib.load(self.encoder_path)
 
-        # ✅ 새로운 값이 있으면 'unknown'으로 변환
+        # 새로운 값이 있으면 'unknown'으로 변환
         unknown_labels = set(X['법정동코드']) - set(self.label_encoder.classes_)
         if unknown_labels:
             print(f"⚠️ Warning: 새로운 법정동코드 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
             X.loc[X['법정동코드'].isin(unknown_labels), '법정동코드'] = 'unknown'
 
-        # ✅ Label Encoding 적용
+        # Label Encoding 적용
         X['법정동코드_encoded'] = self.label_encoder.transform(X['법정동코드'])
         X.drop('법정동코드', axis=1, inplace=True)
 
-        # ✅ 원핫 인코딩 수행
+        # 원핫 인코딩 수행
         X_encoded = pd.get_dummies(X, columns=self.one_hot_columns, dummy_na=False)
 
-        # ✅ 원핫 인코딩 컬럼 목록을 `.pkl`에서 로드하여 누락된 컬럼 추가
+        # 원핫 인코딩 컬럼 목록을 `.pkl`에서 로드하여 누락된 컬럼 추가
         if not os.path.exists(self.one_hot_path):
             print(f"⚠️ {self.one_hot_path} 파일이 없습니다. GitHub에서 다운로드합니다...")
             self.download_from_github(self.one_hot_url, self.one_hot_path)
@@ -133,6 +140,7 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         X_encoded = X_encoded.reindex(columns=self.one_hot_categories + ['법정동코드_encoded'], fill_value=0)
 
         return X_encoded
+
 
 
 
