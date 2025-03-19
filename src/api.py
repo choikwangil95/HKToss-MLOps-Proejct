@@ -9,12 +9,29 @@ import urllib.parse
 import re
 
 import os
-
+import toml
+import streamlit as st
 from dotenv import load_dotenv
 
-#.env 파일 로드
+# ✅ .env 파일 로드 (로컬 환경)
 load_dotenv()
-kakao_api_key = os.getenv("kakao_api_key")
+
+# ✅ secrets.toml 로드 (로컬 환경만)
+kakao_api_key_by_toml = None
+if os.path.exists("../secrets.toml"):  # 파일이 존재하는 경우만 로드
+    try:
+        secrets = toml.load("../secrets.toml")
+        kakao_api_key_by_toml = secrets.get("general", {}).get("kakao_api_key")
+    except Exception as e:
+        print(f"⚠️ Warning: secrets.toml을 로드할 수 없습니다. ({e})")
+
+# ✅ 최종적으로 환경 변수 불러오기 (우선순위: .env > secrets.toml > Streamlit Secrets)
+kakao_api_key = (
+    os.getenv("kakao_api_key") or  # ✅ 로컬: .env 사용
+    kakao_api_key_by_toml or  # ✅ 로컬: secrets.toml 사용
+    st.secrets.get("general", {}).get("kakao_api_key")  # ✅ Streamlit Cloud 환경
+)
+
 
 # 현재 날짜
 current_date = datetime.today()
@@ -858,10 +875,22 @@ def add_market_profit(df):
 def get_dummy_estate_list():
     import pandas as pd
     import os
+    
+    # ✅ 파일 경로 설정
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스.csv")
+    file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스2.csv")
 
-    df = pd.read_csv(file_path, encoding='cp949')
+    # ✅ 파일 존재 여부 확인
+    if not os.path.exists(file_path):
+        print(f"🚨 파일 없음: {file_path}")
+        return pd.DataFrame()  # 빈 데이터프레임 반환 (예외 방지)
+
+    # ✅ CSV 파일 로드 (인코딩 오류 대비)
+    try:
+        df = pd.read_csv(file_path, encoding="cp949")
+    except UnicodeDecodeError:
+        print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+        df = pd.read_csv(file_path, encoding="utf-8-sig")
 
     # ✅ 모집공고일을 datetime 형식으로 변환
     df["모집공고일"] = pd.to_datetime(df["모집공고일"])
