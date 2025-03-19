@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 from streamlit_folium import st_folium
 import folium
-from folium.features import DivIcon
 from api import get_future_estate_list, add_address_code, get_dummy_estate_list
 from data_preprocessing_base import pipeline_base
 from data_preprocessing_online import pipeline_online
 from data_preprocessing import pipeline
+from folium.features import DivIcon
 import joblib
 from feature_preprocessing import DataScaler, DataEncoder, pipeline2
 import toml
@@ -107,7 +107,7 @@ if predict_button:
         st.error("❌ 주택을 선택하세요!")
     else:
         # ✅ 모델 저장 경로
-        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_0.0.1.pkl"
+        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_0.0.2.pkl"
         model_path = "./storage/trained_model/model_0.0.2.pkl"
 
         # ✅ 폴더 확인 및 생성
@@ -154,8 +154,6 @@ if predict_button:
         # ✅ 변환 실행
         df_selected_house = preprocessing_pipeline.transform(df_selected_house)
         df_selected_house = feature_pipeline.transform(df_selected_house)
-
-        print(df_selected_house.columns)
 
         # 모델 예측 결과
         predicted = trained_model.predict(df_selected_house)
