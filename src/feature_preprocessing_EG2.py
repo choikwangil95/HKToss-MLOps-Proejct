@@ -16,12 +16,12 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
 
     def fit(self, X, y=None):
-        self.columns_to_normalize_rb = ['공급규모', '공급세대수']
-        self.columns_to_normalize_pt = ['접수건수','시세차익', '경쟁률']
+        #self.columns_to_normalize_rb = ['공급규모', '공급세대수']
+        self.columns_to_normalize_pt = ['공급규모', '공급세대수','접수건수','시세차익', '경쟁률']
 
         # ✅ 스케일러 학습
 
-        self.rb_scaler.fit(X[self.columns_to_normalize_rb])
+        #self.rb_scaler.fit(X[self.columns_to_normalize_rb])
         self.pt_scaler.fit(X[self.columns_to_normalize_pt])
        
 
@@ -31,7 +31,7 @@ class DataScaler(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         # ✅ Robust Scaling 적용
-        X[self.columns_to_normalize_rb] = self.rb_scaler.transform(X[self.columns_to_normalize_rb])
+        #X[self.columns_to_normalize_rb] = self.rb_scaler.transform(X[self.columns_to_normalize_rb])
 
         # ✅ Powertransformation Scaling 적용
         X[self.columns_to_normalize_pt] = self.pt_scaler.transform(X[self.columns_to_normalize_pt])
@@ -62,9 +62,7 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
-        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업',
-                                '공공주택지구', '대규모택지개발지구', '수도권내민영공공주택지구',
-                                '순위', '거주지역', '공급지역코드']
+        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업', '공공주택지구']
         self.fitted = False
         self.one_hot_categories = None  # 원핫 인코딩 컬럼 목록 저장
 
