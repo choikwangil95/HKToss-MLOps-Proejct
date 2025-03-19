@@ -12,7 +12,7 @@ class DataScaler(BaseEstimator, TransformerMixin):
         self.sd_scaler = StandardScaler()
 
     def fit(self, X, y=None):
-        self.columns_to_normalize_mm = ['공급규모', '공급세대수', '접수건수', '시세차익']
+        self.columns_to_normalize_mm = ['공급규모', '공급세대수', '접수건수', '전용면적', '공급금액(최고가 기준)', '거래금액(만원)']
         self.columns_to_normalize_sd = ['경쟁률']
 
         # ✅ MinMaxScaler & StandardScaler 학습
@@ -54,8 +54,8 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/label_encoder.pkl"
-        self.one_hot_path = "./storage/one_hot_columns.pkl"
+        self.encoder_path = "./storage/label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
