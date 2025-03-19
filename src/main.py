@@ -136,14 +136,13 @@ if predict_button:
             os.makedirs("./storage/trained_pipeline")
 
         # ✅ GitHub에서 파이프라인 다운로드
-        #if not os.path.exists(pipeline_path):
-        print("🔽 파이프라인을 GitHub에서 다운로드 중...")
-        urllib.request.urlretrieve(pipeline_url, pipeline_path)
-        print("✅ 파이프라인 다운로드 완료!")
+        if not os.path.exists(pipeline_path):
+            print("🔽 파이프라인을 GitHub에서 다운로드 중...")
+            urllib.request.urlretrieve(pipeline_url, pipeline_path)
+            print("✅ 파이프라인 다운로드 완료!")
 
         # ✅ 파이프라인 불러오기
         feature_pipeline = joblib.load(pipeline_path)
-
 
         # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
         if "encoder" in feature_pipeline.named_steps:
