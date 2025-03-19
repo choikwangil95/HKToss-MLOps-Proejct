@@ -107,7 +107,7 @@ if predict_button:
         st.error("❌ 주택을 선택하세요!")
     else:
         # ✅ 모델 저장 경로
-        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_0.0.2.pkl"
+        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_0.0.1.pkl"
         model_path = "./storage/trained_model/model_0.0.2.pkl"
 
         # ✅ 폴더 확인 및 생성
