@@ -107,7 +107,7 @@ if predict_button:
         st.error("❌ 주택을 선택하세요!")
     else:
         # ✅ 모델 저장 경로
-        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/trained_model/model_0.0.2.pkl"
+        model_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_0.0.2.pkl"
         model_path = "./storage/trained_model/model_0.0.2.pkl"
 
         # ✅ 폴더 확인 및 생성
@@ -128,7 +128,7 @@ if predict_button:
         preprocessing_pipeline = pipeline(type='predict')
 
         # ✅ 파이프라인 저장 경로
-        pipeline_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/trained_pipeline/pipeline_0.0.1.pkl"
+        pipeline_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_0.0.1.pkl"
         pipeline_path = "./storage/trained_pipeline/pipeline_0.0.1.pkl"
 
         # ✅ 폴더 확인 및 생성
@@ -136,17 +136,27 @@ if predict_button:
             os.makedirs("./storage/trained_pipeline")
 
         # ✅ GitHub에서 파이프라인 다운로드
-        if not os.path.exists(pipeline_path):
-            print("🔽 파이프라인을 GitHub에서 다운로드 중...")
-            urllib.request.urlretrieve(pipeline_url, pipeline_path)
-            print("✅ 파이프라인 다운로드 완료!")
+        #if not os.path.exists(pipeline_path):
+        print("🔽 파이프라인을 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(pipeline_url, pipeline_path)
+        print("✅ 파이프라인 다운로드 완료!")
 
         # ✅ 파이프라인 불러오기
         feature_pipeline = joblib.load(pipeline_path)
 
+
+        # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
+        if "encoder" in feature_pipeline.named_steps:
+            encoder = feature_pipeline.named_steps["encoder"]
+            encoder.encoder_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder.pkl_0.0.1"
+            encoder.one_hot_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns.pkl_0.0.1"
+            print("✅ DataEncoder의 URL 속성 재설정 완료!")
+
         # ✅ 변환 실행
         df_selected_house = preprocessing_pipeline.transform(df_selected_house)
         df_selected_house = feature_pipeline.transform(df_selected_house)
+
+        print(df_selected_house.columns)
 
         # 모델 예측 결과
         predicted = trained_model.predict(df_selected_house)

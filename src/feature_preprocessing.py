@@ -49,21 +49,15 @@ import urllib.parse
 
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
-        # GitHub 파일 URL (디폴트는 None으로 설정)
-        if encoder_url is None:
-            encoder_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/label_encoder_0.0.1.pkl"
-        if one_hot_url is None:
-            one_hot_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/one_hot_columns_0.0.1.pkl"
-        
-        # GitHub 파일 URL
-        self.encoder_url = encoder_url
-        self.one_hot_url = one_hot_url
+        # ✅ GitHub 파일 URL (디폴트는 None으로 설정)
+        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_0.0.1.pkl"
+        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
 
-        # 로컬 경로 설정
-        self.encoder_path = "./storage/label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/one_hot_columns_0.0.1.pkl"
+        # ✅ 로컬 경로 설정
+        self.encoder_path = "./storage/label_encoder.pkl"
+        self.one_hot_path = "./storage/one_hot_columns.pkl"
 
-        # 로컬에 파일이 없으면 GitHub에서 다운로드
+        # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
         self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업',
                                 '공공주택지구', '대규모택지개발지구', '수도권내민영공공주택지구',

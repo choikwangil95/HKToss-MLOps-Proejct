@@ -121,7 +121,7 @@ def fill_nan_with_zero(df):
 def add_estate_price(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약매물_공급금액 (서울, 경기, 인천).csv"
 
         # ✅ 한글 URL 인코딩 처리
@@ -171,7 +171,7 @@ import pandas as pd
 def add_estate_list(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약 매물 주소변환.csv"
 
         # ✅ 한글 URL 인코딩 처리
@@ -232,7 +232,7 @@ import numpy as np
 def add_market_profit(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
 
         # ✅ 한글 URL 인코딩 처리
