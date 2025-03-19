@@ -147,8 +147,8 @@ if predict_button:
         # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
         if "encoder" in feature_pipeline.named_steps:
             encoder = feature_pipeline.named_steps["encoder"]
-            encoder.encoder_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder.pkl_0.0.1"
-            encoder.one_hot_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns.pkl_0.0.1"
+            encoder.encoder_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_0.0.1.pkl"
+            encoder.one_hot_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
             print("✅ DataEncoder의 URL 속성 재설정 완료!")
 
         # ✅ 변환 실행
