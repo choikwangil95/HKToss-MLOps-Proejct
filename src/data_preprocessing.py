@@ -121,7 +121,7 @@ def fill_nan_with_zero(df):
 def add_estate_price(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약매물_공급금액 (서울, 경기, 인천).csv"
 
         # ✅ 한글 URL 인코딩 처리
@@ -171,7 +171,7 @@ import pandas as pd
 def add_estate_list(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약 매물 주소변환.csv"
 
         # ✅ 한글 URL 인코딩 처리
@@ -229,16 +229,10 @@ import urllib.parse
 import pandas as pd
 import numpy as np
 
-import os
-import urllib.request
-import urllib.parse
-import pandas as pd
-import numpy as np
-
 def add_market_profit(df):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
-        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/develop/src/storage/raw_data/"
+        base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
 
         # ✅ 한글 URL 인코딩 처리
@@ -322,6 +316,7 @@ def feature_pre(df, type):
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명', 
         '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', 
         '주택형', '평균당첨가점', '최고당첨가점',
+        '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
         '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
     ]
 
@@ -329,9 +324,12 @@ def feature_pre(df, type):
     df.drop(drop_cols, axis=1, inplace=True)
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
-
+    # 이 부분 나중에 불필요시 평균, 최고 드랍
+    # df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
     df['최저당첨가점'].fillna(0, inplace=True)
 
+    # df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
+    # df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
     df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
 
     df['최저당첨가점'] = df['최저당첨가점'].astype(float)
