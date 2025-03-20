@@ -59,8 +59,8 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/label_encoder.pkl"
-        self.one_hot_path = "./storage/one_hot_columns.pkl"
+        self.encoder_path = "./storage/label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
