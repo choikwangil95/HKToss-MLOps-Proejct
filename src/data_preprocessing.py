@@ -42,7 +42,7 @@ def filter_unnecessary_columns(df):
                 unnecessary_columns.append(column)
 
     # Case 5) 그 외 기타 칼럼
-    unnecessary_columns.extend(["주택관리번호", "주택관리번호", "입주예정월"])
+    unnecessary_columns.extend(["주택관리번호", "주택관리번호"])
 
     # Case 5-1) 기타 칼럼 추가 제거
     unnecessary_columns.extend(["건설업체명_시공사", "사업주체명_시행사", "기사 번호", "주요 토픽"])
@@ -263,9 +263,6 @@ def add_market_profit(df):
             print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
             df_real_estate_price = pd.read_csv(csv_path, encoding="utf-8-sig")
 
-        # ✅ 모집공고일을 년월 형태로 변환
-        df['모집공고일_년월'] = pd.to_datetime(df['모집공고일'], errors='coerce').dt.strftime('%Y%m').astype(float)
-
         # ✅ 전용면적이 0이 아닌 경우만 계산 (ZeroDivisionError 방지)
         df['전용면적당 공급금액(최고가기준)'] = np.where(
             df['전용면적'] > 0,
@@ -274,15 +271,19 @@ def add_market_profit(df):
         )
 
         # ✅ 시세차익 계산을 위해 매물 데이터와 실거래가 데이터 병합 (속도 최적화)
-        df = df.merge(df_real_estate_price, left_on=['법정동코드', '모집공고일_년월'],
-                      right_on=['법정동코드', '년월'], how='left')
+        df = df.merge(
+            df_real_estate_price, 
+            left_on=['법정동코드', '입주예정월'],
+            right_on=['법정동코드', '년월'], 
+            how='left'
+        )
 
-        # ✅ 시세차익 계산 (NaN 방지)
-        df['전용면적당 거래금액(만원)'] = df['전용면적당 거래금액(만원)'].fillna(0)  # NaN 값 0으로 변환
+        # ✅ 시세차익 계산 (실거래가 없는 경우 드랍)
+        df = df.dropna(subset=['전용면적당 거래금액(만원)']).reset_index(drop=True)
         df['전용면적당 시세차익'] = df['전용면적당 공급금액(최고가기준)'] - df['전용면적당 거래금액(만원)']
 
         # ✅ 불필요한 칼럼 정리 (NaN 방지)
-        df.drop(columns=['모집공고일_년월', '년월', '전용면적당 거래금액(만원)'], inplace=True, errors='ignore')
+        df.drop(columns=['년월', '전용면적당 거래금액(만원)'], inplace=True, errors='ignore')
 
     except Exception as e:
         print(f"🚨 오류 발생: {e}")
@@ -313,9 +314,16 @@ def feature_pre(df, type):
     
     drop_cols = [
 
+<<<<<<< Updated upstream
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명', 
         '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', 
         '주택형', '평균당첨가점', '최저당첨가점','구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+=======
+        '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+        '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+        '주택형', '평균당첨가점', '최고당첨가점',
+        '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+>>>>>>> Stashed changes
         '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
     ]
 
