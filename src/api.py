@@ -898,9 +898,49 @@ def get_dummy_estate_list():
     # ✅ 2025-03-12 이상인 매물만 필터링
     filtered_df = df[df["모집공고일"] >= "2025-01-01"]
 
+    # 시세차익 NaN 처리
+    filtered_df['시세차익'] = np.nan
+
     # 당첨가점 Nan 처리
     filtered_df['최저당첨가점'] = np.nan
     filtered_df['최고당첨가점'] = np.nan
     filtered_df['평균당첨가점'] = np.nan
+
+    # 경쟁률 처리
+    def preprocessing_applicant_rate(df):
+        # 경쟁률에서 '-' 를 NaN으로 바꾸고, NaN을 모두 0.0으로 변환
+        df["경쟁률"] = df["경쟁률"].replace("-", np.nan).fillna(0.0)
+
+        def process_rate(row):
+            # 미달인 경우 경쟁률 처리
+            if "△" in str(row["경쟁률"]):
+                pattern = "[^0-9]"
+                shortage = int(re.sub(pattern, "", str(row["경쟁률"])))
+
+                supply_units = float(row["공급세대수"])
+                if supply_units == 0 or int(row["접수건수"]) == 0:
+                    rate = 0.0
+                else:
+                    rate = round((supply_units - shortage) / supply_units, 2)
+            else:
+                rate = float(str(row["경쟁률"]).replace(",", ""))
+
+            # 미달여부 판단
+            # shortage_status = "Y" if rate < 1 else "N"
+
+            return pd.Series({"경쟁률": rate })
+        
+        df[["경쟁률"]] = df.apply(process_rate, axis=1)
+
+        return df
+    
+    filtered_df = preprocessing_applicant_rate(filtered_df)
+
+    filtered_df = filtered_df[filtered_df['경쟁률'] >= 1]
+
+    filtered_df['전용면적'] = filtered_df['주택형'].apply(lambda x: ''.join(filter(lambda y: y.isdigit() or y == '.', x)))
+    filtered_df['전용면적'] = filtered_df['전용면적'].astype(float)
+
+    filtered_df = filtered_df[filtered_df['전용면적'] <= 85]
 
     return filtered_df
