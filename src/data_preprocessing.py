@@ -343,27 +343,12 @@ def feature_pre(df, type):
     df.drop(drop_cols, axis=1, inplace=True)
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
-<<<<<<< HEAD
-    # 이 부분 나중에 불필요시 평균, 최고 드랍
-
-    df['최저당첨가점'].fillna(0, inplace=True)
-    # df['최고당첨가점'].fillna(0, inplace=True)
-
-    # df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
-    # df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
-    df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
-
-    df['최저당첨가점'] = df['최저당첨가점'].astype(float)
-    # df['최고당첨가점'] = df['최고당첨가점'].astype(float)
-
-=======
     # ㄴ [광일] 해당 작업 위에 type_check 함수로 코드 이동함
->>>>>>> develop
 
     # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
     if type == 'train':
-        df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
-        # df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
+        # df = df.drop(df[(df["경쟁률"] == 0) | (df["최당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
+        df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
 
 
     return df
