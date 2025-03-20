@@ -33,9 +33,7 @@ def get_kakao_api_key():
     return kakao_api_key
 
 
-def print_estate_list(df):
-    df_unique = df.drop_duplicates(subset="공고번호", keep='first')
-    df_unique = add_address_code(df_unique)
+def print_estate_list(df_unique):
     df_unique_view = df_unique[['공급지역명' ,'주택명', '공급규모', '청약접수시작일', '청약접수종료일', '당첨자발표일']]
 
     st.dataframe(df_unique_view, use_container_width=True)
@@ -85,8 +83,8 @@ def print_estate_list_map(df_unique):
 
 def predict_target(target = '', model = '', version='0.0.1'):
     # ✅ 모델 저장 경로
-        model_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_{version}.pkl"
-        model_path = f"./storage/trained_model/model_{version}.pkl"
+        model_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/{target}_{model}_{version}.pkl"
+        model_path = f"./storage/trained_model/{target}_{model}_{version}.pkl"
 
         # ✅ 폴더 확인 및 생성
         if not os.path.exists("./storage/trained_model"):
@@ -100,14 +98,14 @@ def predict_target(target = '', model = '', version='0.0.1'):
 
         # ✅ 모델 불러오기
         trained_model = joblib.load(model_path)
-        trained_model = joblib.load(f"./storage/trained_model/model_{version}.pkl")
+        trained_model = joblib.load(f"./storage/trained_model/{target}_{model}_{version}.pkl")
 
         # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
         preprocessing_pipeline = pipeline(type='predict')
 
         # ✅ 파이프라인 저장 경로
-        pipeline_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_{version}.pkl"
-        pipeline_path = f"./storage/trained_pipeline/pipeline_{version}.pkl"
+        pipeline_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
+        pipeline_path = f"./storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
 
         # ✅ 폴더 확인 및 생성
         if not os.path.exists("./storage/trained_pipeline"):
@@ -125,8 +123,8 @@ def predict_target(target = '', model = '', version='0.0.1'):
         # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
         if "encoder" in feature_pipeline.named_steps:
             encoder = feature_pipeline.named_steps["encoder"]
-            encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_{version}.pkl"
-            encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_{version}.pkl"
+            encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_{target}_{model}_{version}.pkl"
+            encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_{target}_{model}_{version}.pkl"
             print("✅ DataEncoder의 URL 속성 재설정 완료!")
 
         # ✅ 변환 실행
