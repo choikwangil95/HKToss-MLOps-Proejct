@@ -300,7 +300,7 @@ def feature_pre(df, type):
     - 평균당첨가점 결측값 처리 및 데이터 타입 변환
     """
 
-    # 삭제할 컬럼 원본 목록
+    # # 삭제할 컬럼 원본 목록
     # drop_cols = [
 
     #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
@@ -312,6 +312,7 @@ def feature_pre(df, type):
     #     '전용면적당 공급금액(최고가기준)', '미달여부'
     # ]
     
+    # 
     drop_cols = [
 
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
@@ -326,18 +327,23 @@ def feature_pre(df, type):
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
     # 이 부분 나중에 불필요시 평균, 최고 드랍
-    # df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
-    df['최고당첨가점'].fillna(0, inplace=True)
+
+    df['최저당첨가점'].fillna(0, inplace=True)
+    # df['최고당첨가점'].fillna(0, inplace=True)
 
     # df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
-    df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
-    # df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
+    # df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
+    df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
 
-    df['최고당첨가점'] = df['최고당첨가점'].astype(float)
+    df['최저당첨가점'] = df['최저당첨가점'].astype(float)
+    # df['최고당첨가점'] = df['최고당첨가점'].astype(float)
+
 
     # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
     if type == 'train':
-        df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
+        df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
+        # df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
+
 
     return df
 

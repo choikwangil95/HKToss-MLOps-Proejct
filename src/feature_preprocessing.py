@@ -19,6 +19,8 @@ class DataScaler(BaseEstimator, TransformerMixin):
         #self.columns_to_normalize_rb = ['공급규모', '공급세대수']
         self.columns_to_normalize_pt = ['공급규모', '공급세대수','접수건수', '경쟁률']
 
+        
+
         # ✅ 스케일러 학습
 
         #self.rb_scaler.fit(X[self.columns_to_normalize_rb])
@@ -62,8 +64,15 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
+
+        # # low용
+        # self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
+        #                         '정비사업', '공공주택지구']
+        
+        # high용
         self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
-                                '정비사업', '공공주택지구', '대규모택지개발지구', '거주지역', '공급지역코드', '수도권내민영공공주택지구', '순위']
+                                '정비사업', '공공주택지구','대규모택지개발지구', '거주지역', '공급지역코드', '수도권내민영공공주택지구', '순위']
+        
         self.fitted = False
         self.one_hot_categories = None  # 원핫 인코딩 컬럼 목록 저장
 
