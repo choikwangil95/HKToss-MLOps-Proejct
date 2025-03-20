@@ -17,7 +17,9 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         #self.columns_to_normalize_rb = ['공급규모', '공급세대수']
-        self.columns_to_normalize_pt = ['공급규모', '공급세대수','접수건수', '경쟁률']
+        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률']
+
+        
 
         # ✅ 스케일러 학습
 
@@ -53,17 +55,24 @@ import urllib.parse
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
         # ✅ GitHub 파일 URL (디폴트는 None으로 설정)
-        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_0.0.1.pkl"
-        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
+        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/high_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/high_lgb_one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/one_hot_columns_0.0.1.pkl"
+        self.encoder_path = "./storage/high_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/high_lgb_one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
+
+        # # low용
+        # self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
+        #                         '정비사업', '공공주택지구']
+        
+        # high용
         self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
-                                '정비사업', '공공주택지구', '대규모택지개발지구', '거주지역', '공급지역코드', '수도권내민영공공주택지구', '순위']
+                                '정비사업', '공공주택지구','대규모택지개발지구', '거주지역', '수도권내민영공공주택지구', '순위']
+        
         self.fitted = False
         self.one_hot_categories = None  # 원핫 인코딩 컬럼 목록 저장
 

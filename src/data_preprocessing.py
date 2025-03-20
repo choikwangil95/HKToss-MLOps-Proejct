@@ -42,7 +42,7 @@ def filter_unnecessary_columns(df):
                 unnecessary_columns.append(column)
 
     # Case 5) 그 외 기타 칼럼
-    unnecessary_columns.extend(["주택관리번호", "주택관리번호"])
+    unnecessary_columns.extend(["주택관리번호"])
 
     # Case 5-1) 기타 칼럼 추가 제거
     unnecessary_columns.extend(["건설업체명_시공사", "사업주체명_시행사", "기사 번호", "주요 토픽"])
@@ -52,6 +52,38 @@ def filter_unnecessary_columns(df):
 
     # 불필요한 칼럼 삭제
     df = df.drop(columns=unnecessary_columns)
+
+    return df
+
+
+def type_check(df):
+    # 공급세대수:  , 제거 후 타입 변환
+    df['공급세대수'] = (
+        df['공급세대수'].str.replace(',', '')
+        .astype(float)
+    )
+
+    # 접수건수: , 제거 후 타입 변환
+    df['접수건수'] = (
+        df['접수건수'].str.replace(',', '')
+        .astype(float)
+    )
+
+    # 최저당첨가점, 최고당첨가점, 평균당첨가점: -, nan값 제거 후 타입 변환
+    # - 제거
+    df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
+    df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
+    df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
+
+    # nan 제거
+    df['최고당첨가점'].fillna(0, inplace=True)
+    df['최저당첨가점'].fillna(0, inplace=True)
+    df['평균당첨가점'].fillna(0, inplace=True)
+
+    # 타입 변환 (object -> float)
+    df['최고당첨가점'] = df['최고당첨가점'].astype(float)
+    df['최저당첨가점'] = df['최저당첨가점'].astype(float)
+    df['평균당첨가점'] = df['평균당첨가점'].astype(float)
 
     return df
 
@@ -71,23 +103,16 @@ def split_housing_type(df):
 
 
 def preprocessing_applicant_rate(df):
-    # 경쟁률이 '-'인 경우 NaN으로 변환
-    df["경쟁률"] = df["경쟁률"].apply(lambda x: np.nan if str(x).strip() == "-" else x)
+    # 경쟁률에서 '-' 를 NaN으로 바꾸고, NaN을 모두 0.0으로 변환
+    df["경쟁률"] = df["경쟁률"].replace("-", np.nan).fillna(0.0)
 
     def process_rate(row):
-        # 경쟁률이 NaN인 경우 0으로 설정
-        if pd.isna(row["경쟁률"]):
-            rate = 0.0
         # 미달인 경우 경쟁률 처리
-        elif "△" in str(row["경쟁률"]):
+        if "△" in str(row["경쟁률"]):
             pattern = "[^0-9]"
             shortage = int(re.sub(pattern, "", str(row["경쟁률"])))
 
-            try:
-                supply_units = int(float(row["공급세대수"]))  # 공급세대수 숫자로 변환
-            except ValueError:
-                supply_units = 0  # 변환 실패 시 기본값 설정
-
+            supply_units = row["공급세대수"]
             if supply_units == 0 or int(row["접수건수"]) == 0:
                 rate = 0.0
             else:
@@ -99,15 +124,7 @@ def preprocessing_applicant_rate(df):
         shortage_status = "Y" if rate < 1 else "N"
 
         return pd.Series({"경쟁률": rate, "미달여부": shortage_status})
-
-    # 공급세대수와 접수건수를 숫자형으로 변환하여 적용
-    df["공급세대수"] = (
-        pd.to_numeric(df["공급세대수"], errors="coerce").fillna(0).astype(int)
-    )
-    df["접수건수"] = (
-        pd.to_numeric(df["접수건수"], errors="coerce").fillna(0).astype(int)
-    )
-
+    
     df[["경쟁률", "미달여부"]] = df.apply(process_rate, axis=1)
 
     return df
@@ -300,7 +317,7 @@ def feature_pre(df, type):
     - 평균당첨가점 결측값 처리 및 데이터 타입 변환
     """
 
-    # 삭제할 컬럼 원본 목록
+    # # 삭제할 컬럼 원본 목록
     # drop_cols = [
 
     #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
@@ -312,32 +329,48 @@ def feature_pre(df, type):
     #     '전용면적당 공급금액(최고가기준)', '미달여부'
     # ]
     
+    # 시세차익용 드랍칼럼 목록
+    # drop_cols = [
+
+    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+    #     '주택형', '평균당첨가점', '최고당첨가점', '최저당첨가점',
+    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
+    # ]
+
+    # 최저용 드랍칼럼 목록
+    # drop_cols = [
+
+    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+    #     '주택형', '평균당첨가점', '최고당첨가점',
+    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
+    # ]
+
+    # # 최고용 드랍칼럼 목록
     drop_cols = [
 
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
         '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
-        '주택형', '평균당첨가점', '최고당첨가점',
+        '주택형', '평균당첨가점', '최저당첨가점',
         '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
         '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
     ]
+
 
     # 불필요한 컬럼 삭제
     df.drop(drop_cols, axis=1, inplace=True)
     
     # 당첨가점 결측값 처리 및 데이터 타입 변환
-    # 이 부분 나중에 불필요시 평균, 최고 드랍
-    # df[['최저당첨가점','최고당첨가점', '평균당첨가점']].fillna(0, inplace=True)
-    df['최고당첨가점'].fillna(0, inplace=True)
-
-    # df['평균당첨가점'] = df['평균당첨가점'].astype(str).str.replace("-", "0")
-    df['최고당첨가점'] = df['최고당첨가점'].astype(str).str.replace("-", "0")
-    # df['최저당첨가점'] = df['최저당첨가점'].astype(str).str.replace("-", "0")
-
-    df['최고당첨가점'] = df['최고당첨가점'].astype(float)
+    # ㄴ [광일] 해당 작업 위에 type_check 함수로 코드 이동함
 
     # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
     if type == 'train':
+        # df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
         df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
+
 
     return df
 
@@ -353,6 +386,7 @@ def pipeline(type):
     # 데이터 전처리
     filter_rows_transformer = FunctionTransformer(filter_unnecessary_rows)
     filter_columns_transformer = FunctionTransformer(filter_unnecessary_columns)
+    type_check_transformer = FunctionTransformer(type_check)
     split_transformer = FunctionTransformer(split_housing_type)
     rate_transformer = FunctionTransformer(preprocessing_applicant_rate)
     nan_transformer = FunctionTransformer(fill_nan_with_zero)
@@ -361,13 +395,11 @@ def pipeline(type):
     profit_transformer = FunctionTransformer(add_market_profit)
     feature_transformer = FunctionTransformer(feature_pre,  kw_args={'type': type})
 
-    # 피쳐 엔지니어링
-    # Todo: 피쳐 엔지니어링 추가
-
     preprocessing_pipeline = Pipeline(
         [
             ("filter_row", filter_rows_transformer),
             ("filter_column", filter_columns_transformer),
+            ("type_check", type_check_transformer),
             ("split", split_transformer),
             ("rate", rate_transformer),
             ("nan", nan_transformer),
