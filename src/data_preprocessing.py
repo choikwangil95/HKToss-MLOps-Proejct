@@ -246,7 +246,7 @@ import urllib.parse
 import pandas as pd
 import numpy as np
 
-def add_market_profit(df):
+def add_market_profit(df, type):
     try:
         # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
         base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
@@ -296,8 +296,9 @@ def add_market_profit(df):
         )
 
         # ✅ 시세차익 계산 (실거래가 없는 경우 드랍)
-        df = df.dropna(subset=['전용면적당 거래금액(만원)']).reset_index(drop=True)
-        df['전용면적당 시세차익'] = df['전용면적당 공급금액(최고가기준)'] - df['전용면적당 거래금액(만원)']
+        if type == 'train':
+            df = df.dropna(subset=['전용면적당 거래금액(만원)']).reset_index(drop=True)
+            df['전용면적당 시세차익'] = df['전용면적당 공급금액(최고가기준)'] - df['전용면적당 거래금액(만원)']
 
         # ✅ 불필요한 칼럼 정리 (NaN 방지)
         df.drop(columns=['년월', '전용면적당 거래금액(만원)'], inplace=True, errors='ignore')
@@ -342,14 +343,14 @@ def feature_pre(df, type):
     # 최저용 드랍칼럼 목록
     # drop_cols = [
 
-    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
-    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
-    #     '주택형', '평균당첨가점', '최고당첨가점',
-    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
-    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
-    # ]
+     #   '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+     #   '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+     #   '주택형', '평균당첨가점', '최고당첨가점',
+     #   '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+     #   '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
+    #]
 
-    # # 최고용 드랍칼럼 목록
+    # 최고용 드랍칼럼 목록
     drop_cols = [
 
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
@@ -392,7 +393,7 @@ def pipeline(type):
     nan_transformer = FunctionTransformer(fill_nan_with_zero)
     price_transformer = FunctionTransformer(add_estate_price)
     list_transformer = FunctionTransformer(add_estate_list)
-    profit_transformer = FunctionTransformer(add_market_profit)
+    profit_transformer = FunctionTransformer(add_market_profit,  kw_args={'type': type})
     feature_transformer = FunctionTransformer(feature_pre,  kw_args={'type': type})
 
     preprocessing_pipeline = Pipeline(

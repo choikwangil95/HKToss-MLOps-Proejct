@@ -82,8 +82,6 @@ def print_estate_list_map(df_unique):
 
 
 def predict_target(target, model, version, data):
-    print(f'================={data}=================')
-
     # ✅ 모델 저장 경로
     model_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_{target}_{model}_{version}.pkl"
     model_path = f"./storage/trained_model/model_{target}_{model}_{version}.pkl"
@@ -128,6 +126,14 @@ def predict_target(target, model, version, data):
         encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/label_encoder_{target}_{model}_{version}.pkl"
         encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/one_hot_columns_{target}_{model}_{version}.pkl"
         print("✅ DataEncoder의 URL 속성 재설정 완료!")
+
+    # ✅ DataScaler 속성 재설정
+    if "scaler" in feature_pipeline.named_steps:
+        scaler = feature_pipeline.named_steps["scaler"]
+        scaler.scaler_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/{target}_{model}_scaler_powertransformer_{version}.pkl"
+        scaler.scaler_path = f"./storage/trained_transformer/{target}_{model}_scaler_powertransformer_{version}.pkl"
+        print("✅ DataScaler의 URL 속성 재설정 완료!")
+
 
     # ✅ 변환 실행
     df_selected_house = preprocessing_pipeline.transform(data)
