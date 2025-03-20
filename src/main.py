@@ -20,7 +20,7 @@ if os.path.exists("../secrets.toml"):  # 파일이 존재하는 경우만 로드
         secrets = toml.load("../secrets.toml")
         kakao_api_key_by_toml = secrets.get("general", {}).get("kakao_api_key")
     except Exception as e:
-        print(f"⚠️ Warning: secrets.toml을 로드할 수 없습니다. ({e})")
+        print(f"⚠️ Warning: secrets.toml을 로드할 수 없`다. ({e})")
 
 # ✅ 최종적으로 환경 변수 불러오기 (우선순위: .env > secrets.toml > Streamlit Secrets)
 kakao_api_key = (
