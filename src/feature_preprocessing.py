@@ -2,65 +2,80 @@ import pandas as pd
 import numpy as np
 import joblib
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder, RobustScaler, PowerTransformer, QuantileTransformer
-
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
+import os
+import urllib.request
+import urllib.parse
 
 # ✅ Custom Transformer (데이터 스케일링)
 class DataScaler(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        
-        self.rb_scaler = RobustScaler()
+    def __init__(self, scaler_url=None):
+        # GitHub 모델 URL
+        self.scaler_url = scaler_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/high_lgb_scaler_powertransformer_0.0.1.pkl"
+
+        # 로컬 모델 경로
+        self.scaler_path = "./storage/trained_transformer/high_lgb_scaler_powertransformer_0.0.1.pkl"
+
+        # 스케일러 초기화
         self.pt_scaler = PowerTransformer()
-       
 
-
-    def fit(self, X, y=None):
-        #self.columns_to_normalize_rb = ['공급규모', '공급세대수']
+        # 스케일링할 컬럼 목록
         self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률']
 
-        
+    def download_from_github(self, url, file_path):
+        """GitHub에서 파일 다운로드"""
+        if not os.path.exists(file_path):
+            print(f"🔽 파일 다운로드 중: {url}")
+            try:
+                urllib.request.urlretrieve(url, file_path)
+                print("✅ 다운로드 완료!")
+            except Exception as e:
+                print(f"🚨 다운로드 실패: {e}")
+        else:
+            print(f"⚡ 이미 로컬에 파일이 존재합니다: {file_path}")
 
-        # ✅ 스케일러 학습
+    def fit(self, X, y=None):
+        X = X.copy()
 
-        #self.rb_scaler.fit(X[self.columns_to_normalize_rb])
+        # PowerTransformer 학습
         self.pt_scaler.fit(X[self.columns_to_normalize_pt])
-       
+
+        # 학습된 스케일러 저장
+        os.makedirs("./storage", exist_ok=True)
+        joblib.dump(self.pt_scaler, self.scaler_path)
 
         return self
 
     def transform(self, X):
         X = X.copy()
 
-        # ✅ Robust Scaling 적용
-        #X[self.columns_to_normalize_rb] = self.rb_scaler.transform(X[self.columns_to_normalize_rb])
+        # 로컬에서 스케일러 로드 (없으면 GitHub에서 다운로드)
+        if not os.path.exists(self.scaler_path):
+            print(f"⚠️ {self.scaler_path} 파일이 없습니다. GitHub에서 다운로드합니다...")
+            self.download_from_github(self.scaler_url, self.scaler_path)
 
-        # ✅ Powertransformation Scaling 적용
+        if os.path.exists(self.scaler_path):
+            self.pt_scaler = joblib.load(self.scaler_path)
+        else:
+            print("🚨 스케일러 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
+            return X  # 문제가 발생한 경우 원본 데이터를 반환
+
+        # PowerTransformation 스케일링 적용
         X[self.columns_to_normalize_pt] = self.pt_scaler.transform(X[self.columns_to_normalize_pt])
 
-
-
         return X
-
-
-import pandas as pd
-import numpy as np
-import os
-import joblib
-import urllib.request
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import LabelEncoder
-import urllib.parse
+    
 
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
         # ✅ GitHub 파일 URL (디폴트는 None으로 설정)
-        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/high_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/high_lgb_one_hot_columns_0.0.1.pkl"
+        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/high_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/high_lgb_one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/high_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/high_lgb_one_hot_columns_0.0.1.pkl"
+        self.encoder_path = "./storage/trained_transformer/high_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/trained_transformer/high_lgb_one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()

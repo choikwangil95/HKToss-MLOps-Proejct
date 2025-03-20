@@ -81,57 +81,59 @@ def print_estate_list_map(df_unique):
     st_folium(m, width=700, height=500)
 
 
-def predict_target(target = '', model = '', version='0.0.1'):
+def predict_target(target, model, version, data):
+    print(f'================={data}=================')
+
     # ✅ 모델 저장 경로
-        model_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/{target}_{model}_{version}.pkl"
-        model_path = f"./storage/trained_model/{target}_{model}_{version}.pkl"
+    model_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_model/model_{target}_{model}_{version}.pkl"
+    model_path = f"./storage/trained_model/model_{target}_{model}_{version}.pkl"
 
-        # ✅ 폴더 확인 및 생성
-        if not os.path.exists("./storage/trained_model"):
-            os.makedirs("./storage/trained_model")
+    # ✅ 폴더 확인 및 생성
+    if not os.path.exists("./storage/trained_model"):
+        os.makedirs("./storage/trained_model")
 
-        # ✅ GitHub에서 모델 다운로드
-        if not os.path.exists(model_path):
-            print("🔽 모델을 GitHub에서 다운로드 중...")
-            urllib.request.urlretrieve(model_url, model_path)
-            print("✅ 모델 다운로드 완료!")
+    # ✅ GitHub에서 모델 다운로드
+    if not os.path.exists(model_path):
+        print("🔽 모델을 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(model_url, model_path)
+        print("✅ 모델 다운로드 완료!")
 
-        # ✅ 모델 불러오기
-        trained_model = joblib.load(model_path)
-        trained_model = joblib.load(f"./storage/trained_model/{target}_{model}_{version}.pkl")
+    # ✅ 모델 불러오기
+    trained_model = joblib.load(model_path)
+    trained_model = joblib.load(f"./storage/trained_model/model_{target}_{model}_{version}.pkl")
 
-        # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
-        preprocessing_pipeline = pipeline(type='predict')
+    # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
+    preprocessing_pipeline = pipeline(type='predict')
 
-        # ✅ 파이프라인 저장 경로
-        pipeline_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
-        pipeline_path = f"./storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
+    # ✅ 파이프라인 저장 경로
+    pipeline_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
+    pipeline_path = f"./storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
 
-        # ✅ 폴더 확인 및 생성
-        if not os.path.exists("./storage/trained_pipeline"):
-            os.makedirs("./storage/trained_pipeline")
+    # ✅ 폴더 확인 및 생성
+    if not os.path.exists("./storage/trained_pipeline"):
+        os.makedirs("./storage/trained_pipeline")
 
-        # ✅ GitHub에서 파이프라인 다운로드
-        if not os.path.exists(pipeline_path):
-            print("🔽 파이프라인을 GitHub에서 다운로드 중...")
-            urllib.request.urlretrieve(pipeline_url, pipeline_path)
-            print("✅ 파이프라인 다운로드 완료!")
+    # ✅ GitHub에서 파이프라인 다운로드
+    if not os.path.exists(pipeline_path):
+        print("🔽 파이프라인을 GitHub에서 다운로드 중...")
+        urllib.request.urlretrieve(pipeline_url, pipeline_path)
+        print("✅ 파이프라인 다운로드 완료!")
 
-        # ✅ 파이프라인 불러오기
-        feature_pipeline = joblib.load(pipeline_path)
+    # ✅ 파이프라인 불러오기
+    feature_pipeline = joblib.load(pipeline_path)
 
-        # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
-        if "encoder" in feature_pipeline.named_steps:
-            encoder = feature_pipeline.named_steps["encoder"]
-            encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/label_encoder_{target}_{model}_{version}.pkl"
-            encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_{target}_{model}_{version}.pkl"
-            print("✅ DataEncoder의 URL 속성 재설정 완료!")
+    # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
+    if "encoder" in feature_pipeline.named_steps:
+        encoder = feature_pipeline.named_steps["encoder"]
+        encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/label_encoder_{target}_{model}_{version}.pkl"
+        encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/one_hot_columns_{target}_{model}_{version}.pkl"
+        print("✅ DataEncoder의 URL 속성 재설정 완료!")
 
-        # ✅ 변환 실행
-        df_selected_house = preprocessing_pipeline.transform(df_selected_house)
-        df_selected_house = feature_pipeline.transform(df_selected_house)
+    # ✅ 변환 실행
+    df_selected_house = preprocessing_pipeline.transform(data)
+    df_selected_house = feature_pipeline.transform(df_selected_house)
 
-        # 모델 예측 결과
-        predicted = trained_model.predict(df_selected_house)
+    # 모델 예측 결과
+    predicted = trained_model.predict(df_selected_house)
 
-        return predicted
+    return predicted

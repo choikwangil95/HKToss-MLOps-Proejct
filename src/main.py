@@ -50,9 +50,9 @@ if predict_button:
         st.session_state.is_predicted = False
     else:
         # 여기에 예측 코드 작성
-        score_low_predicted = predict_target('low', 'lgb', '0.0.1') # 최저당첨가점 예측
-        score_high_predicted = predict_target('high', 'lgb', '0.0.1') # 최고당첨가점 예측
-        # price_diff_predicted = predict_target('price_diff', 'xgb', '0.0.1') # 시세차익 예측
+        score_low_predicted = predict_target('low', 'lgb', '0.0.1', df_selected_house) # 최저당첨가점 예측
+        score_high_predicted = predict_target('high', 'lgb', '0.0.1', df_selected_house) # 최고당첨가점 예측
+        # price_diff_predicted = predict_target('price_diff', 'xgb', '0.0.1', df_selected_house) # 시세차익 예측
 
         # 예측된 결과 데이터프레임 (임시 더미)
         df_selected_house_predicted_view = df_selected_house[['주택형', '순위', '거주지역', '접수건수', '경쟁률']].copy()
