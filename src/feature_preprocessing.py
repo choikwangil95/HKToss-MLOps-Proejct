@@ -1,39 +1,42 @@
 import pandas as pd
 import numpy as np
 import joblib
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder, RobustScaler, PowerTransformer, QuantileTransformer
+
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 
 # ✅ Custom Transformer (데이터 스케일링)
 class DataScaler(BaseEstimator, TransformerMixin):
     def __init__(self):
-        self.mm_scaler = MinMaxScaler()
-        self.sd_scaler = StandardScaler()
+        
+        self.rb_scaler = RobustScaler()
+        self.pt_scaler = PowerTransformer()
+       
+
 
     def fit(self, X, y=None):
-        self.columns_to_normalize_mm = ['공급규모', '공급세대수', '접수건수', '전용면적', '공급금액(최고가 기준)', '거래금액(만원)']
-        self.columns_to_normalize_sd = ['경쟁률']
+        #self.columns_to_normalize_rb = ['공급규모', '공급세대수']
+        self.columns_to_normalize_pt = ['공급규모', '공급세대수','접수건수', '경쟁률']
 
-        # ✅ MinMaxScaler & StandardScaler 학습
-        self.mm_scaler.fit(X[self.columns_to_normalize_mm])
-        self.sd_scaler.fit(X[self.columns_to_normalize_sd])
+        # ✅ 스케일러 학습
+
+        #self.rb_scaler.fit(X[self.columns_to_normalize_rb])
+        self.pt_scaler.fit(X[self.columns_to_normalize_pt])
+       
 
         return self
 
     def transform(self, X):
         X = X.copy()
 
-        # ✅ 로그 변환 적용
-        # columns_to_transform = ['공급규모', '공급세대수', '접수건수']
-        # for column in columns_to_transform:
-        #     X[column] = np.log1p(X[column])
+        # ✅ Robust Scaling 적용
+        #X[self.columns_to_normalize_rb] = self.rb_scaler.transform(X[self.columns_to_normalize_rb])
 
-        # ✅ MinMax Scaling 적용
-        X[self.columns_to_normalize_mm] = self.mm_scaler.transform(X[self.columns_to_normalize_mm])
+        # ✅ Powertransformation Scaling 적용
+        X[self.columns_to_normalize_pt] = self.pt_scaler.transform(X[self.columns_to_normalize_pt])
 
-        # ✅ Standard Scaling 적용
-        X[self.columns_to_normalize_sd] = self.sd_scaler.transform(X[self.columns_to_normalize_sd])
+
 
         return X
 
@@ -54,14 +57,13 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/one_hot_columns_0.0.1.pkl"
+        self.encoder_path = "./storage/label_encoder.pkl"
+        self.one_hot_path = "./storage/one_hot_columns.pkl"
 
         # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
-        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업',
-                                '공공주택지구', '대규모택지개발지구', '수도권내민영공공주택지구',
-                                '순위', '거주지역', '공급지역코드']
+        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
+                                '정비사업', '공공주택지구', '대규모택지개발지구', '거주지역', '공급지역코드', '수도권내민영공공주택지구', '순위']
         self.fitted = False
         self.one_hot_categories = None  # 원핫 인코딩 컬럼 목록 저장
 
