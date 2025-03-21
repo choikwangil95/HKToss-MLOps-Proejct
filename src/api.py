@@ -672,6 +672,50 @@ def process_address_data(address, address_by_apartname, verbose=False):
     except Exception as e:
         print(f"[오류 발생] {e} (address='{address}', address_by_apartname='{address_by_apartname}')")
         return None, None, None, None, None, None, None, None  # 오류 발생 시도 안전하게 8개 반환
+    
+# 아파트명 전처리 함수
+def preprocess_apartname(df):
+
+    # 특정 키워드 리스트 (정확한 일치 단어 제거)
+    custom_stopwords = {}
+
+    # 특정 단어를 포함하는 단어 제거 (예: '지구'가 포함된 단어 제거)
+    remove_if_contains = ['우선' , '분양' ,'후', '잔여세대', '모집공고', '공급', '세대', '-', '전환', '블록', '공공']
+
+    # ✅ 괄호와 괄호 안의 텍스트 모두 제거하는 함수
+    def remove_parentheses(text):
+        """괄호와 괄호 안의 텍스트 모두 제거"""
+        return re.sub(r'\(.*?\)', '', text).strip()
+
+    # ✅ 필터링 조건 함수
+    def filter_conditions(word):
+        """단어가 제거 대상인지 확인"""
+        # if re.search(r'[A-Za-z]', word):  # 영어 포함 단어 제거
+        #     return False
+        if word in custom_stopwords:  # 특정 키워드 제거
+            return False
+        if any(sub in word for sub in remove_if_contains):  # 특정 단어 포함 단어 제거
+            return False
+        return True  # 모든 조건을 통과하면 유지
+
+    # ✅ 정제 함수
+    def clean_name(address):
+        # 괄호와 괄호 안의 텍스트 제거
+        address = remove_parentheses(address)
+
+        words = address.split()  # 띄어쓰기 기준으로 분리
+        cleaned_words = [word for word in words if filter_conditions(word)]  # 필터링 적용
+        cleaned_address = ' '.join(cleaned_words)  # 정제된 단어들 다시 합치기
+
+        # 쉼표가 있으면 첫 번째 단어만 반환
+        if ',' in cleaned_address:
+            return cleaned_address.split(',')[0]
+        return cleaned_address  # 쉼표가 없으면 그대로 반환
+
+    # ✅ 주소 정제 적용
+    df['정제된주택명'] = df['공급지역명'] + ' ' + df['주택명'].apply(clean_name)
+
+    return df
 
 
 def add_address_code(df_future_estate_list):
@@ -942,5 +986,50 @@ def get_dummy_estate_list():
     filtered_df['전용면적'] = filtered_df['전용면적'].astype(float)
 
     filtered_df = filtered_df[filtered_df['전용면적'] <= 85]
+
+    def preprocess_apartname(df):
+
+        # 특정 키워드 리스트 (정확한 일치 단어 제거)
+        custom_stopwords = {}
+
+        # 특정 단어를 포함하는 단어 제거 (예: '지구'가 포함된 단어 제거)
+        remove_if_contains = ['우선' , '분양' ,'후', '잔여세대', '모집공고', '공급', '세대', '-', '전환', '블록', '공공']
+
+        # ✅ 괄호와 괄호 안의 텍스트 모두 제거하는 함수
+        def remove_parentheses(text):
+            """괄호와 괄호 안의 텍스트 모두 제거"""
+            return re.sub(r'\(.*?\)', '', text).strip()
+
+        # ✅ 필터링 조건 함수
+        def filter_conditions(word):
+            """단어가 제거 대상인지 확인"""
+            # if re.search(r'[A-Za-z]', word):  # 영어 포함 단어 제거
+            #     return False
+            if word in custom_stopwords:  # 특정 키워드 제거
+                return False
+            if any(sub in word for sub in remove_if_contains):  # 특정 단어 포함 단어 제거
+                return False
+            return True  # 모든 조건을 통과하면 유지
+
+        # ✅ 정제 함수
+        def clean_name(address):
+            # 괄호와 괄호 안의 텍스트 제거
+            address = remove_parentheses(address)
+
+            words = address.split()  # 띄어쓰기 기준으로 분리
+            cleaned_words = [word for word in words if filter_conditions(word)]  # 필터링 적용
+            cleaned_address = ' '.join(cleaned_words)  # 정제된 단어들 다시 합치기
+
+            # 쉼표가 있으면 첫 번째 단어만 반환
+            if ',' in cleaned_address:
+                return cleaned_address.split(',')[0]
+            return cleaned_address  # 쉼표가 없으면 그대로 반환
+
+        # ✅ 주소 정제 적용
+        df['정제된주택명'] = df['주택명'].apply(clean_name)
+
+        return df
+    filtered_df = preprocess_apartname(filtered_df)
+    filtered_df['주택명'] = filtered_df['정제된주택명']
 
     return filtered_df
