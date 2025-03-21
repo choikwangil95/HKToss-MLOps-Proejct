@@ -23,6 +23,8 @@ if 'selected_house_type' not in st.session_state:
     st.session_state.selected_house_type = None
 if 'df_predicted' not in st.session_state:
     st.session_state.df_predicted = None
+if 'df_predicted_origin' not in st.session_state:
+    st.session_state.df_predicted_origin = None
 if 'df_selected_house' not in st.session_state:
     st.session_state.df_selected_house = None
 
@@ -123,7 +125,7 @@ if predict_button:
         df_selected_house_predicted_view['시세차익'] = price_diff_predicted
 
         def highlight_prediction_columns(val):
-            return 'background-color: #e8f9ee; color: #1b5e20; font-weight: 900'
+            return 'background-color: #e8f9ee; color: black; font-weight: 900'
 
         styled_df = df_selected_house_predicted_view.style \
             .format({
@@ -133,20 +135,46 @@ if predict_button:
                 '시세차익': '{:,.0f}'
             }) \
             .applymap(highlight_prediction_columns, subset=['최저당첨가점', '최고당첨가점', '시세차익'])
+        
+        styled_df_origin = df_selected_house_predicted_view.style \
+            .format({
+                '경쟁률': '{:.2f}',
+                '최저당첨가점': '{:.0f}',
+                '최고당첨가점': '{:.0f}',
+                '시세차익': '{:,.0f}'
+            })
 
         st.session_state.df_predicted = styled_df
+        st.session_state.df_predicted_origin = styled_df_origin
         st.session_state.is_predicted = True
 
 if st.session_state.is_predicted:
     st.dataframe(st.session_state.df_predicted)
+
+    # SHAP 설명 모델 생성 및 값 계산
+    shap_value = shap_values_3[0]
+    if shap_value is None or len(shap_value) == 0:
+        # 예: SHAP 값이 없을 때 처리
+        pass
+
+    predicted_value = expected_value_3 + shap_value.sum()
+
+
     st.success("✅ 예측 완료! 모델의 예측 분석 리포트를 확인해보세요.")
 
     plt.rcParams['font.family'] = 'Malgun Gothic'
     plt.rcParams['axes.unicode_minus'] = False
 
-    # SHAP 설명 모델 생성 및 값 계산
-    shap_value = shap_values_3[0]
-    predicted_value = expected_value_3 + shap_value.sum()
+    topic_labels = {
+        "토픽 1": "토픽1 (분양가와 대출 조건)",
+        "토픽 2": "토픽2 (청약 경쟁률 및 순위)",
+        "토픽 3": "토픽3 (아파트 타입 및 조건)",
+        "토픽 4": "토픽4 (당첨 가점 및 로또 청약)",
+        "토픽 5": "토픽5 (부동산 시장)",
+        "토픽 6": "토픽6 (신도시 개발 및 인프라 조성)",
+        "토픽 7": "토픽7 (청약 접수 및 아파트 면적)"
+    }
+    test_data_3.rename(columns=topic_labels, inplace=True)
 
     feature_names = test_data_3.columns.tolist()
     feature_values = test_data_3.iloc[0].tolist()
@@ -187,33 +215,72 @@ if st.session_state.is_predicted:
 
         return result.strip()
 
-    st.markdown(
-        f"""
-        예측값은 모델 평균값인 <b>{format_korean_currency(int(expected_value_3))}</b>에서 시작하여
-        각 특성의 영향을 받아 최종적으로 
-        <span style='color:yellow; font-weight:bold'>{format_korean_currency(int(predicted_value))}</span>으로 결정되었습니다.
-        """,
-        unsafe_allow_html=True
-    )
+    col1_result, col2_result = st.columns(2)
+
+    with col1_result:
+        st.markdown(
+            f"""
+            <div style="padding:15px; border-radius:10px;">
+            <h5>📌 모델 기준값</h5>
+            <p style='font-weight:bold; font-size:20px;'>
+            {format_korean_currency(int(expected_value_3))}
+            </p>
+            <p style='font-size:14px;'>모델이 예측을 시작하는 기준값입니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col2_result:
+        st.markdown(
+            f"""
+            <div style="padding:15px; border-radius:10px;">
+            <h5>✅ 최종 예측값</h5>
+            <p style='font-weight:bold; font-size:20px;'>
+            {format_korean_currency(int(predicted_value))}
+            </p>
+            <p style='font-size:14px;'>입력된 매물 특성들을 반영한 예측 결과입니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.dataframe(st.session_state.df_predicted_origin)
 
     for name, value, impact in top3_features:
+        feature_means = {
+            "공급규모": 574.74,
+            "접수건수": 1076.38,
+            "경쟁률": 94.08,
+            "토픽1 (분양가와 대출 조건)": 0.09,
+            "토픽2 (청약 경쟁률 및 순위)": 0.18,
+            "토픽3 (아파트 타입 및 조건)": 0.09,
+            "토픽4 (당첨 가점 및 로또 청약)": 0.15,
+            "토픽5 (부동산 시장)": 0.14,
+            "토픽6 (신도시 개발 및 인프라 조성)": 0.17,
+            "토픽7 (청약 접수 및 아파트 면적)": 0.18,
+            "법정동코드": 3024510706.00,
+            "기준금리": 1.03
+        }
+                
         direction = "증가" if impact > 0 else "감소"
-        st.markdown(
-            f"• **{name}** 값이 **{value:.3f}**으로 설정되어 예측값을 **{format_korean_currency(int(impact))} 만큼 {direction}**시켰습니다."
-        )
+        impact_color = "red" if impact > 0 else "#1e88e5"  # 파란색 계열
+        impact_emoji = "📈" if impact > 0 else "📉"
+
+        impact_text = f"<span style='color:{impact_color}; font-weight:bold;'>{format_korean_currency(int(abs(impact)))} 만큼 {direction}{impact_emoji}</span>"
+
+        if str(value).lower() == "unknown":
+            st.markdown(
+                f"• 매물의 <strong>{name}</strong> 값이 학습데이터에 없는 값(<code>unknown</code>)으로 예측값을 {impact_text}시켰습니다.",
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f"• 매물의 <strong>{name}</strong> 값이 <strong>{value:.2f}</strong> (매물 평균: {feature_means[name]})으로 예측값을 {impact_text}시켰습니다.",
+                unsafe_allow_html=True
+            )
 
 else:
     df_selected_house_view = st.session_state.df_selected_house[['주택형', '접수건수', '경쟁률', '최저당첨가점', '최고당첨가점', '시세차익']]
     st.dataframe(df_selected_house_view)
 
-
-st.markdown("<br>", unsafe_allow_html=True)
-st.subheader('3 사용자의 주택청약 당첨 가능성 확인')
-st.divider()
-
-# 사용자로부터 당첨 가점 입력 받기 (0~100점 범위)
-score = st.number_input("당첨 가점을 입력하세요", min_value=0, max_value=100, step=1)
-st.text('진행중..🏡')
-
-# 입력된 점수 출력
-# st.write(f"입력된 당첨 가점: **{score}점**")

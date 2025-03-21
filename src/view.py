@@ -141,16 +141,19 @@ def predict_target(target, model, version, data):
     df_selected_house = preprocessing_pipeline.transform(data)
     df_selected_house = feature_pipeline.transform(df_selected_house)
 
-    if target == 'gain':
-        print(f'==테스트=================================={df_selected_house.columns}==================================')
-        #data.drop(columns=['거래금액(만원)'], inplace=True)
+    # 역변환용 데이터 복사
+    df_selected_house_reversed = df_selected_house.copy()
+
+    # feature_pipeline 내 스텝 역순으로 순회
+    for step_name, step in reversed(feature_pipeline.steps):
+        if hasattr(step, 'inverse_transform'):
+            df_selected_house_reversed = step.inverse_transform(df_selected_house_reversed)
 
     # 모델 예측 결과
-    test_data = df_selected_house
-    predicted = trained_model.predict(test_data)
+    predicted = trained_model.predict(df_selected_house)
 
     explainer = shap.TreeExplainer(trained_model)
-    shap_values = explainer.shap_values(test_data)
+    shap_values = explainer.shap_values(df_selected_house)
     expected_value = explainer.expected_value
 
-    return predicted, test_data, shap_values, expected_value
+    return predicted, df_selected_house_reversed, shap_values, expected_value
