@@ -121,6 +121,9 @@ def predict_target(target, model, version, data):
     # ✅ 파이프라인 불러오기
     feature_pipeline = joblib.load(pipeline_path)
 
+    if not os.path.exists("./storage/trained_transformer"):
+        os.makedirs("./storage/trained_transformer")
+
     # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
     if "encoder" in feature_pipeline.named_steps:
         encoder = feature_pipeline.named_steps["encoder"]
