@@ -137,45 +137,45 @@ def fill_nan_with_zero(df):
 
 def add_estate_price(df):
     try:
-        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        # GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
         base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약매물_공급금액 (서울, 경기, 인천).csv"
 
-        # ✅ 한글 URL 인코딩 처리
+        # 한글 URL 인코딩 처리
         encoded_file_name = urllib.parse.quote(file_name)
         csv_url = base_url + encoded_file_name
 
-        # ✅ 로컬 파일 저장 경로
+        # 로컬 파일 저장 경로
         csv_path = f"./storage/raw_data/{file_name}"
 
-        # ✅ 폴더 확인 및 생성
+        # 폴더 확인 및 생성
         if not os.path.exists("./storage/raw_data"):
             os.makedirs("./storage/raw_data")
 
-        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        # CSV 파일이 없으면 GitHub에서 다운로드
         if not os.path.exists(csv_path):
-            print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+            print(f"CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
             urllib.request.urlretrieve(csv_url, csv_path)
-            print("✅ CSV 다운로드 완료!")
+            print("CSV 다운로드 완료!")
 
-        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        # CSV 파일 로드 (인코딩 오류 대비)
         try:
             df_estate_price = pd.read_csv(csv_path, encoding="cp949")
         except UnicodeDecodeError:
-            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            print("`cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
             df_estate_price = pd.read_csv(csv_path, encoding="utf-8-sig")
 
-        # ✅ 필요한 컬럼만 유지
+        # 필요한 컬럼만 유지
         df_estate_price = df_estate_price[["공고번호", "주택형", "공급금액(최고가 기준)"]]
 
-        # ✅ 중복 제거
+        # 중복 제거
         df_estate_price.drop_duplicates(subset=["공고번호", "주택형"], keep="first", inplace=True)
 
-        # ✅ 원본 데이터에 공급금액 칼럼 추가
+        # 원본 데이터에 공급금액 칼럼 추가
         df = pd.merge(df, df_estate_price, on=["공고번호", "주택형"], how="left")
 
     except Exception as e:
-        print(f"🚨 오류 발생: {e}")
+        print(f"오류 발생: {e}")
 
     return df
 
@@ -187,35 +187,35 @@ import pandas as pd
 
 def add_estate_list(df):
     try:
-        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        # GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
         base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "청약 매물 주소변환.csv"
 
-        # ✅ 한글 URL 인코딩 처리
+        # 한글 URL 인코딩 처리
         encoded_file_name = urllib.parse.quote(file_name)
         csv_url = base_url + encoded_file_name
 
-        # ✅ 로컬 파일 저장 경로
+        # 로컬 파일 저장 경로
         csv_path = f"./storage/raw_data/{file_name}"
 
-        # ✅ 폴더 확인 및 생성
+        # 폴더 확인 및 생성
         if not os.path.exists("./storage/raw_data"):
             os.makedirs("./storage/raw_data")
 
-        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        # CSV 파일이 없으면 GitHub에서 다운로드
         if not os.path.exists(csv_path):
-            print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+            print(f"CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
             urllib.request.urlretrieve(csv_url, csv_path)
-            print("✅ CSV 다운로드 완료!")
+            print("CSV 다운로드 완료!")
 
-        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        # CSV 파일 로드 (인코딩 오류 대비)
         try:
             df_estate_list = pd.read_csv(csv_path, encoding="cp949")
         except UnicodeDecodeError:
-            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            print("`cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
             df_estate_list = pd.read_csv(csv_path, encoding="utf-8-sig")
 
-        # ✅ 필요한 컬럼만 유지
+        # 필요한 컬럼만 유지
         df_estate_list = df_estate_list[
             [
                 "공고번호",
@@ -230,11 +230,11 @@ def add_estate_list(df):
             ]
         ]
 
-        # ✅ 원본 데이터에 주소 정보 병합
+        # 원본 데이터에 주소 정보 병합
         df = pd.merge(df, df_estate_list, on="공고번호", how="left")
 
     except Exception as e:
-        print(f"🚨 오류 발생: {e}")
+        print(f"오류 발생: {e}")
 
     return df
 
@@ -248,46 +248,46 @@ import numpy as np
 
 def add_market_profit(df, type):
     try:
-        # ✅ GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
+        # GitHub 원격 파일 URL (한글 포함된 파일명 인코딩)
         base_url = "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/raw_data/"
         file_name = "서울경기인천_전체_월별_법정동별_실거래가_평균.csv"
 
-        # ✅ 한글 URL 인코딩 처리
+        # 한글 URL 인코딩 처리
         encoded_file_name = urllib.parse.quote(file_name)
         csv_url = base_url + encoded_file_name
 
-        # ✅ 로컬 파일 저장 경로
+        # 로컬 파일 저장 경로
         csv_path = f"./storage/raw_data/{file_name}"
 
-        # ✅ 폴더 확인 및 생성
+        # 폴더 확인 및 생성
         if not os.path.exists("./storage/raw_data"):
             os.makedirs("./storage/raw_data") 
 
-        # ✅ CSV 파일이 없으면 GitHub에서 다운로드
+        # CSV 파일이 없으면 GitHub에서 다운로드
         if not os.path.exists(csv_path):
             try:
-                print(f"🔽 CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
+                print(f"CSV 데이터를 GitHub에서 다운로드 중: {csv_url}")
                 urllib.request.urlretrieve(csv_url, csv_path)
-                print("✅ CSV 다운로드 완료!")
+                print("CSV 다운로드 완료!")
             except Exception as e:
-                print(f"🚨 CSV 다운로드 실패: {e}")
+                print(f"CSV 다운로드 실패: {e}")
                 return df  # 오류 발생 시 원본 데이터 그대로 반환
 
-        # ✅ CSV 파일 로드 (인코딩 오류 대비)
+        # CSV 파일 로드 (인코딩 오류 대비)
         try:
             df_real_estate_price = pd.read_csv(csv_path, encoding="cp949")
         except UnicodeDecodeError:
-            print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+            print("`cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
             df_real_estate_price = pd.read_csv(csv_path, encoding="utf-8-sig")
 
-        # ✅ 전용면적이 0이 아닌 경우만 계산 (ZeroDivisionError 방지)
+        # 전용면적이 0이 아닌 경우만 계산 (ZeroDivisionError 방지)
         df['전용면적당 공급금액(최고가기준)'] = np.where(
             df['전용면적'] > 0,
             df['공급금액(최고가 기준)'] / df['전용면적'],
             0  # 전용면적이 0이면 기본값 0으로 설정
         )
 
-        # ✅ 시세차익 계산을 위해 매물 데이터와 실거래가 데이터 병합 (속도 최적화)
+        # 시세차익 계산을 위해 매물 데이터와 실거래가 데이터 병합 (속도 최적화)
         df = df.merge(
             df_real_estate_price, 
             left_on=['법정동코드', '입주예정월'],
@@ -300,11 +300,11 @@ def add_market_profit(df, type):
             df = df.dropna(subset=['전용면적당 거래금액(만원)']).reset_index(drop=True)
             df['전용면적당 시세차익'] = df['전용면적당 공급금액(최고가기준)'] - df['전용면적당 거래금액(만원)']
 
-        # ✅ 불필요한 칼럼 정리 (NaN 방지)
+        # 불필요한 칼럼 정리 (NaN 방지)
         df.drop(columns=['년월', '전용면적당 거래금액(만원)'], inplace=True, errors='ignore')
 
     except Exception as e:
-        print(f"🚨 오류 발생: {e}")
+        print(f"오류 발생: {e}")
 
     return df
 
@@ -331,24 +331,34 @@ def feature_pre(df, type):
     # ]
     
     # 시세차익용 드랍칼럼 목록
-    # drop_cols = [
-
-    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
-    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
-    #     '주택형', '평균당첨가점', '최고당첨가점', '최저당첨가점',
-    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
-    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
-    # ]
-
-    # 최저용 드랍칼럼 목록
     drop_cols = [
 
         '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
         '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
-        '주택형', '평균당첨가점', '최고당첨가점',
+        '주택형', '평균당첨가점', '최고당첨가점', '최저당첨가점',
         '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
         '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
     ]
+
+    # 최저용 드랍칼럼 목록
+    # drop_cols = [
+
+    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+    #     '주택형', '평균당첨가점', '최고당첨가점',
+    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
+    # ]
+
+    # # # 최고용 드랍칼럼 목록
+    # drop_cols = [
+
+    #     '공급지역명', '공급위치우편번호', '공급위치', '공고번호', '주택명',
+    #     '모집공고일', '청약접수시작일', '청약접수종료일', '당첨자발표일', '입주예정월',
+    #     '주택형', '평균당첨가점', '최저당첨가점',
+    #     '구', '법정동', '법정동시군구코드', '법정동읍면동코드',
+    #     '위도', '경도', '행정동코드', '시도', '시군구', '읍면동1', '읍면동2',  '전용면적당 공급금액(최고가기준)', '미달여부'
+    # ]
 
     # 최고용 드랍칼럼 목록
     # drop_cols = [
@@ -369,9 +379,9 @@ def feature_pre(df, type):
 
     # 경쟁률이 0이거나 최저당첨가점이 NaN 또는 0인 행 삭제
     if type == 'train':
-        df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
+        # df = df.drop(df[(df["경쟁률"] == 0) | (df["최저당첨가점"].isna()) | (df["최저당첨가점"] == 0)].index)
         # df = df.drop(df[(df["경쟁률"] == 0) | (df["최고당첨가점"].isna()) | (df["최고당첨가점"] == 0)].index)
-
+        pass
 
     return df
 

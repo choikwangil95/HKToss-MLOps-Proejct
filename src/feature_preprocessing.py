@@ -8,7 +8,7 @@ import os
 import urllib.request
 import urllib.parse
 
-# ✅ Custom Transformer (데이터 스케일링)
+# Custom Transformer (데이터 스케일링)
 class DataScaler(BaseEstimator, TransformerMixin):
     def __init__(self, scaler_url=None):
         # GitHub 모델 URL
@@ -77,14 +77,9 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         self.encoder_path = "./storage/trained_transformer/low_lgb_label_encoder_0.0.1.pkl"
         self.one_hot_path = "./storage/trained_transformer/low_lgb_one_hot_columns_0.0.1.pkl"
 
-        # ✅ 로컬에 파일이 없으면 GitHub에서 다운로드
+        # 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
 
-        # # low용
-        # self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
-        #                         '정비사업', '공공주택지구']
-        
-        # high용
         self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
                                 '정비사업', '공공주택지구','대규모택지개발지구', '거주지역', '수도권내민영공공주택지구', '순위']
         
@@ -94,14 +89,14 @@ class DataEncoder(BaseEstimator, TransformerMixin):
     def download_from_github(self, url, file_path):
         """GitHub에서 파일 다운로드"""
         if not os.path.exists(file_path):
-            print(f"🔽 파일 다운로드 중: {url}")
+            print(f"파일 다운로드 중: {url}")
             try:
                 urllib.request.urlretrieve(url, file_path)
-                print("✅ 다운로드 완료!")
+                print("다운로드 완료")
             except Exception as e:
-                print(f"🚨 다운로드 실패: {e}")
+                print(f"다운로드 실패: {e}")
         else:
-            print(f"⚡ 이미 로컬에 파일이 존재합니다: {file_path}")
+            print(f"이미 로컬에 파일이 존재합니다: {file_path}")
 
     def fit(self, X, y=None):
         X = X.copy()
@@ -132,20 +127,20 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
         # LabelEncoder 로드
         if not os.path.exists(self.encoder_path):
-            print(f"⚠️ {self.encoder_path} 파일이 없습니다. GitHub에서 다운로드합니다...")
+            print(f"{self.encoder_path} 파일이 없습니다. GitHub에서 다운로드합니다.")
             self.download_from_github(self.encoder_url, self.encoder_path)
 
         # 로컬에 있는 경우만 로드
         if os.path.exists(self.encoder_path):
             self.label_encoder = joblib.load(self.encoder_path)
         else:
-            print("🚨 LabelEncoder 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
+            print("LabelEncoder 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
             return X  # 문제가 발생한 경우 원본 데이터를 반환
 
         # 새로운 값이 있으면 'unknown'으로 변환
         unknown_labels = set(X['법정동코드']) - set(self.label_encoder.classes_)
         if unknown_labels:
-            print(f"⚠️ Warning: 새로운 법정동코드 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
+            print(f"Warning: 새로운 법정동코드 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
             X.loc[X['법정동코드'].isin(unknown_labels), '법정동코드'] = 'unknown'
 
         # Label Encoding 적용
@@ -158,13 +153,13 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
         # 원핫 인코딩 컬럼 목록을 `.pkl`에서 로드하여 누락된 컬럼 추가
         if not os.path.exists(self.one_hot_path):
-            print(f"⚠️ {self.one_hot_path} 파일이 없습니다. GitHub에서 다운로드합니다...")
+            print(f"{self.one_hot_path} 파일이 없습니다. GitHub에서 다운로드합니다.")
             self.download_from_github(self.one_hot_url, self.one_hot_path)
 
         if os.path.exists(self.one_hot_path):
             self.one_hot_categories = joblib.load(self.one_hot_path)
         else:
-            print("🚨 one_hot_columns 파일 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
+            print("one_hot_columns 파일 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
             return X  # 문제가 발생한 경우 원본 데이터를 반환
 
         # 원핫 인코딩된 컬럼 목록에 맞게 컬럼을 재정렬하고, 누락된 컬럼은 0으로 채움
@@ -173,7 +168,6 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         return X_encoded
 
 
-# ✅ Feature Engineering Pipeline 생성 함수
 def pipeline2():
     scaler = DataScaler()
     encoder = DataEncoder()
