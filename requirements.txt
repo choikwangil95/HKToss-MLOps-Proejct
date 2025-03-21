@@ -30,6 +30,7 @@ wordcloud
 dotenv
 streamlit-folium
 folium
+shap
 
 # 웹 어플리케이션 관련 패키지
 # fastapi

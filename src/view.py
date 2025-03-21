@@ -12,6 +12,7 @@ from feature_preprocessing import DataScaler, DataEncoder, pipeline2
 from data_preprocessing_base import pipeline_base
 from data_preprocessing_online import pipeline_online
 from data_preprocessing import pipeline
+import shap
 
 
 def get_kakao_api_key():
@@ -143,6 +144,11 @@ def predict_target(target, model, version, data):
         #data.drop(columns=['거래금액(만원)'], inplace=True)
 
     # 모델 예측 결과
-    predicted = trained_model.predict(df_selected_house)
+    test_data = df_selected_house
+    predicted = trained_model.predict(test_data)
 
-    return predicted
+    explainer = shap.TreeExplainer(trained_model)
+    shap_values = explainer.shap_values(test_data)
+    expected_value = explainer.expected_value
+
+    return predicted, test_data, shap_values, expected_value

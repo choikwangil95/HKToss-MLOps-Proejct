@@ -113,9 +113,9 @@ if predict_button:
         st.error("❌ 주택형을 선택하세요!")
         st.session_state.is_predicted = False
     else:
-        score_low_predicted = predict_target('low', 'lgb', '0.0.1', st.session_state.df_selected_house)
-        score_high_predicted = predict_target('high', 'lgb', '0.0.1', st.session_state.df_selected_house)
-        price_diff_predicted = predict_target('gain', 'lgb', '0.0.1', st.session_state.df_selected_house)
+        score_low_predicted, test_data_1, shap_values_1, expected_value_1 = predict_target('low', 'lgb', '0.0.1', st.session_state.df_selected_house)
+        score_high_predicted, test_data_2, shap_values_2, expected_value_2 = predict_target('high', 'lgb', '0.0.1', st.session_state.df_selected_house)
+        price_diff_predicted, test_data_3, shap_values_3, expected_value_3 = predict_target('gain', 'lgb', '0.0.1', st.session_state.df_selected_house)
 
         df_selected_house_predicted_view = st.session_state.df_selected_house[['주택형', '접수건수', '경쟁률']].copy()
         df_selected_house_predicted_view['최저당첨가점'] = score_low_predicted
@@ -144,43 +144,64 @@ if st.session_state.is_predicted:
     plt.rcParams['font.family'] = 'Malgun Gothic'
     plt.rcParams['axes.unicode_minus'] = False
 
-    feature_names = ['면적', '층수', '역세권 여부', '입주시기', '브랜드인지도']
-    feature_values = [84, 12, 1, 202501, 3]
-    shap_values = np.array([2.5, -1.8, 1.2, -0.5, 0.8])
-    expected_value = 10
+    # SHAP 설명 모델 생성 및 값 계산
+    shap_value = shap_values_3[0]
+    predicted_value = expected_value_3 + shap_value.sum()
 
+    feature_names = test_data_3.columns.tolist()
+    feature_values = test_data_3.iloc[0].tolist()
+
+    # Waterfall plot
     st.markdown("<h4 style='font-weight:normal;'>📈 분석 리포트</h4>", unsafe_allow_html=True)
-    st.caption("※ 시세차익 예측모델의 Shap value 결과값")
+    st.caption("※ 시세차익 예측모델의 SHAP value 결과값입니다.")
+
     fig, ax = plt.subplots(figsize=(10, 4))
     shap.plots.waterfall(
-        shap.Explanation(values=shap_values, 
-                         base_values=expected_value, 
-                         data=feature_values, 
-                         feature_names=feature_names),
+        shap.Explanation(values=shap_value,
+                        base_values=expected_value_3,
+                        data=feature_values,
+                        feature_names=feature_names),
         max_display=5,
         show=False
     )
     st.pyplot(fig)
 
-    # 상위 3개 특성 영향력 요약 출력
-    predicted_value = expected_value + shap_values.sum()
-
-    shap_info = list(zip(feature_names, feature_values, shap_values))
+    # 영향력 상위 3개 설명 출력
+    shap_info = list(zip(feature_names, feature_values, shap_value))
     shap_info_sorted = sorted(shap_info, key=lambda x: abs(x[2]), reverse=True)
     top3_features = shap_info_sorted[:3]
 
     st.caption("※ 예측에 영향을 준 주요 요인 설명")
 
+    def format_korean_currency(amount):
+        """숫자를 '억 만 원' 형식으로 변환"""
+        eok = amount // 100_000_000
+        man = (amount % 100_000_000) // 10_000
+
+        result = ""
+        if eok > 0:
+            result += f"{eok}억 "
+        if man > 0:
+            result += f"{man}만 "
+        result += "원"
+
+        return result.strip()
+
     st.markdown(
-        f"예측값은 모델 평균값인 **{expected_value:.1f}만원**에서 시작하여 "
-        f"각 특성의 영향을 받아 최종적으로 **{predicted_value:,.1f}만원**으로 결정되었습니다."
+        f"""
+        예측값은 모델 평균값인 <b>{format_korean_currency(int(expected_value_3))}</b>에서 시작하여
+        각 특성의 영향을 받아 최종적으로 
+        <span style='color:yellow; font-weight:bold'>{format_korean_currency(int(predicted_value))}</span>으로 결정되었습니다.
+        """,
+        unsafe_allow_html=True
     )
 
     for name, value, impact in top3_features:
         direction = "증가" if impact > 0 else "감소"
         st.markdown(
-            f"• **{name}** 값이 **{value}**으로 설정되어 예측값을 **{abs(impact):.2f}만큼 {direction}**시켰습니다."
+            f"• **{name}** 값이 **{value:.3f}**으로 설정되어 예측값을 **{format_korean_currency(int(impact))} 만큼 {direction}**시켰습니다."
         )
+
 else:
     df_selected_house_view = st.session_state.df_selected_house[['주택형', '접수건수', '경쟁률', '최저당첨가점', '최고당첨가점', '시세차익']]
     st.dataframe(df_selected_house_view)
