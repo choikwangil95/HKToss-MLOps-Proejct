@@ -94,8 +94,8 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         X = X.copy()
-        X['법정동코드'] = X['법정동코드'].astype(str)
-        unique_labels = list(X['법정동코드'].unique()) + ['unknown']
+        X['공급지역명'] = X['공급지역명'].astype(str)
+        unique_labels = list(X['공급지역명'].unique()) + ['unknown']
         self.label_encoder.fit(unique_labels)
         self.fitted = True
         joblib.dump(self.label_encoder, self.encoder_path)
@@ -107,7 +107,7 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         X = X.copy()
-        X['법정동코드'] = X['법정동코드'].astype(str)
+        X['공급지역명'] = X['공급지역명'].astype(str)
 
         if not os.path.exists(self.encoder_path):
             print(f"{self.encoder_path} 파일이 없습니다. GitHub에서 다운로드합니다.")
@@ -119,12 +119,12 @@ class DataEncoder(BaseEstimator, TransformerMixin):
             print("🚨 LabelEncoder 로드 실패!")
             return X
 
-        unknown_labels = set(X['법정동코드']) - set(self.label_encoder.classes_)
+        unknown_labels = set(X['공급지역명']) - set(self.label_encoder.classes_)
         if unknown_labels:
-            print(f"⚠️ 새로운 법정동코드 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
-            X.loc[X['법정동코드'].isin(unknown_labels), '법정동코드'] = 'unknown'
+            print(f"⚠️ 새로운 공급지역명 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
+            X.loc[X['공급지역명'].isin(unknown_labels), '공급지역명'] = 'unknown'
 
-        X['법정동코드'] = self.label_encoder.transform(X['법정동코드'])
+        X['공급지역명'] = self.label_encoder.transform(X['공급지역명'])
 
         X_encoded = pd.get_dummies(X, columns=self.one_hot_columns, dummy_na=False)
 
@@ -146,13 +146,14 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         if os.path.exists(self.encoder_path):
             try:
                 self.label_encoder = joblib.load(self.encoder_path)
-                if '법정동코드' in X.columns:
-                    X['법정동코드'] = self.label_encoder.inverse_transform(X['법정동코드'].astype(int))
+                if '공급지역명' in X.columns:
+                    X['공급지역명'] = self.label_encoder.inverse_transform(X['공급지역명'].astype(int))
             except Exception as e:
                 print(f"🚨 inverse_transform 실패: {e}")
         else:
             print("🚨 LabelEncoder inverse_transform 실패! 파일이 없습니다.")
         return X
+
 
 
 def pipeline2():

@@ -141,6 +141,10 @@ def predict_target(target, model, version, data):
     df_selected_house = preprocessing_pipeline.transform(data)
     df_selected_house = feature_pipeline.transform(df_selected_house)
 
+    test = df_selected_house['투기과열지구_N']
+
+    print(f'debug {test}==========================================================')
+
     # 역변환용 데이터 복사
     df_selected_house_reversed = df_selected_house.copy()
 

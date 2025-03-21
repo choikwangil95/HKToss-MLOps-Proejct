@@ -249,20 +249,19 @@ if st.session_state.is_predicted:
 
     for name, value, impact in top3_features:
         feature_means = {
-            "공급규모": 574.74,
-            "접수건수": 1076.38,
-            "경쟁률": 94.08,
-            "토픽1 (분양가와 대출 조건)": 0.09,
-            "토픽2 (청약 경쟁률 및 순위)": 0.18,
-            "토픽3 (아파트 타입 및 조건)": 0.09,
-            "토픽4 (당첨 가점 및 로또 청약)": 0.15,
-            "토픽5 (부동산 시장)": 0.14,
-            "토픽6 (신도시 개발 및 인프라 조성)": 0.17,
-            "토픽7 (청약 접수 및 아파트 면적)": 0.18,
-            "법정동코드": 3024510706.00,
-            "기준금리": 1.03
+            "공급규모": 457,
+            "접수건수": 266,
+            "경쟁률": 17.57,
+            "토픽1 (분양가와 대출 조건)": 0.05,
+            "토픽2 (청약 경쟁률 및 순위)": 0.15,
+            "토픽3 (아파트 타입 및 조건)": 0.04,
+            "토픽4 (당첨 가점 및 로또 청약)": 0.09,
+            "토픽5 (부동산 시장)": 0.06,
+            "토픽6 (신도시 개발 및 인프라 조성)": 0.09,
+            "토픽7 (청약 접수 및 아파트 면적)": 0.07,
+            "기준금리": 0.5
         }
-                
+
         direction = "증가" if impact > 0 else "감소"
         impact_color = "red" if impact > 0 else "#1e88e5"  # 파란색 계열
         impact_emoji = "📈" if impact > 0 else "📉"
@@ -271,14 +270,20 @@ if st.session_state.is_predicted:
 
         if str(value).lower() == "unknown":
             st.markdown(
-                f"• 매물의 <strong>{name}</strong> 값이 학습데이터에 없는 값(<code>unknown</code>)으로 예측값을 {impact_text}시켰습니다.",
+                f"• {selected_house}의 <strong>{name}</strong> 값이 학습데이터에 없는 값(<code>unknown</code>)으로 예측값을 {impact_text}시켰습니다.",
                 unsafe_allow_html=True
             )
         else:
-            st.markdown(
-                f"• 매물의 <strong>{name}</strong> 값이 <strong>{value:.2f}</strong> (매물 평균: {feature_means[name]})으로 예측값을 {impact_text}시켰습니다.",
-                unsafe_allow_html=True
-            )
+            if "토픽" in name:
+                st.markdown(
+                    f"• {selected_house}의 <strong>{name}</strong> 값이 <strong>{value:.2f}</strong>으로 예측값을 {impact_text}시켰습니다. (전체 {name} 중앙값: {feature_means[name]})",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f"• {selected_house}의 <strong>{name}</strong> 값이 <strong>{value:.2f}</strong>으로 예측값을 {impact_text}시켰습니다. <br/>(전체 {name} 중앙값: {feature_means[name]})",
+                    unsafe_allow_html=True
+                )
 
 else:
     df_selected_house_view = st.session_state.df_selected_house[['주택형', '접수건수', '경쟁률', '최저당첨가점', '최고당첨가점', '시세차익']]
