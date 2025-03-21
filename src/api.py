@@ -923,7 +923,6 @@ def get_dummy_estate_list():
     # ✅ 파일 경로 설정
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "storage/raw_data/병합_청약매물_목록_정보_픽스2.csv")
-
     # ✅ 파일 존재 여부 확인
     if not os.path.exists(file_path):
         print(f"🚨 파일 없음: {file_path}")
@@ -935,6 +934,24 @@ def get_dummy_estate_list():
     except UnicodeDecodeError:
         print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
         df = pd.read_csv(file_path, encoding="utf-8-sig")
+
+    file_path_index = os.path.join(current_dir, "storage/raw_data/기준금리표.csv")
+    # ✅ 파일 존재 여부 확인
+    if not os.path.exists(file_path_index):
+        print(f"🚨 파일 없음: {file_path_index}")
+        return pd.DataFrame()  # 빈 데이터프레임 반환 (예외 방지)
+
+    # ✅ CSV 파일 로드 (인코딩 오류 대비)
+    try:
+        df_index = pd.read_csv(file_path_index, encoding="cp949")
+    except UnicodeDecodeError:
+        print("⚠️ `cp949` 인코딩 오류 발생 → `utf-8-sig`로 재시도")
+        df_index = pd.read_csv(file_path_index, encoding="utf-8-sig")
+
+    # 기준금리 추가
+    df['모집공고일_tmp'] = df['모집공고일'].str[:7]
+    df = df.merge(df_index, left_on='모집공고일_tmp', right_on='변경일자', how='left').drop(columns=['변경일자'])
+    df.drop(columns=['모집공고일_tmp'], inplace=True)
 
     # ✅ 모집공고일을 datetime 형식으로 변환
     df["모집공고일"] = pd.to_datetime(df["모집공고일"])
@@ -1031,5 +1048,6 @@ def get_dummy_estate_list():
         return df
     filtered_df = preprocess_apartname(filtered_df)
     filtered_df['주택명'] = filtered_df['정제된주택명']
+    filtered_df.drop(columns=['정제된주택명'], inplace=True)
 
     return filtered_df

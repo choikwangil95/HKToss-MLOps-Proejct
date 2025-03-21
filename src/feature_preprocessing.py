@@ -12,16 +12,16 @@ import urllib.parse
 class DataScaler(BaseEstimator, TransformerMixin):
     def __init__(self, scaler_url=None):
         # GitHub 모델 URL
-        self.scaler_url = scaler_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_scaler_powertransformer_0.0.1.pkl"
+        self.scaler_url = scaler_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_scaler_powertransformer_0.0.1.pkl"
 
         # 로컬 모델 경로
-        self.scaler_path = "./storage/trained_transformer/low_lgb_scaler_powertransformer_0.0.1.pkl"
+        self.scaler_path = "./storage/trained_transformer/gain_lgb_scaler_powertransformer_0.0.1.pkl"
 
         # 스케일러 초기화
         self.pt_scaler = PowerTransformer()
 
         # 스케일링할 컬럼 목록
-        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '기준금리', '시세차익']
+        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '기준금리']
 
     def download_from_github(self, url, file_path):
         """GitHub에서 파일 다운로드"""
@@ -70,18 +70,17 @@ class DataScaler(BaseEstimator, TransformerMixin):
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
         # ✅ GitHub 파일 URL (디폴트는 None으로 설정)
-        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_one_hot_columns_0.0.1.pkl"
+        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_one_hot_columns_0.0.1.pkl"
 
         # ✅ 로컬 경로 설정
-        self.encoder_path = "./storage/trained_transformer/low_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/trained_transformer/low_lgb_one_hot_columns_0.0.1.pkl"
+        self.encoder_path = "./storage/trained_transformer/gain_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/trained_transformer/gain_lgb_one_hot_columns_0.0.1.pkl"
 
         # 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
 
-        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제',
-                                '정비사업', '공공주택지구','대규모택지개발지구', '거주지역', '수도권내민영공공주택지구', '순위']
+        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제','정비사업', '공공주택지구','대규모택지개발지구', '거주지역', '수도권내민영공공주택지구', '순위']
         
         self.fitted = False
         self.one_hot_categories = None  # 원핫 인코딩 컬럼 목록 저장

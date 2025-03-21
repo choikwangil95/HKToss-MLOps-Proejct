@@ -123,8 +123,8 @@ def predict_target(target, model, version, data):
     # ✅ DataEncoder 속성 재설정 (클라우드 실행 시 필요)
     if "encoder" in feature_pipeline.named_steps:
         encoder = feature_pipeline.named_steps["encoder"]
-        encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/label_encoder_{target}_{model}_{version}.pkl"
-        encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/one_hot_columns_{target}_{model}_{version}.pkl"
+        encoder.encoder_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/{target}_{model}_label_encoder_{version}.pkl"
+        encoder.one_hot_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/{target}_{model}_one_hot_columns_{version}.pkl"
         print("✅ DataEncoder의 URL 속성 재설정 완료!")
 
     # ✅ DataScaler 속성 재설정
@@ -134,10 +134,13 @@ def predict_target(target, model, version, data):
         scaler.scaler_path = f"./storage/trained_transformer/{target}_{model}_scaler_powertransformer_{version}.pkl"
         print("✅ DataScaler의 URL 속성 재설정 완료!")
 
-
     # ✅ 변환 실행
     df_selected_house = preprocessing_pipeline.transform(data)
     df_selected_house = feature_pipeline.transform(df_selected_house)
+
+    if target == 'gain':
+        print(f'==테스트=================================={df_selected_house.columns}==================================')
+        #data.drop(columns=['거래금액(만원)'], inplace=True)
 
     # 모델 예측 결과
     predicted = trained_model.predict(df_selected_house)

@@ -115,11 +115,12 @@ if predict_button:
     else:
         score_low_predicted = predict_target('low', 'lgb', '0.0.1', st.session_state.df_selected_house)
         score_high_predicted = predict_target('high', 'lgb', '0.0.1', st.session_state.df_selected_house)
+        price_diff_predicted = predict_target('gain', 'lgb', '0.0.1', st.session_state.df_selected_house)
 
         df_selected_house_predicted_view = st.session_state.df_selected_house[['주택형', '접수건수', '경쟁률']].copy()
         df_selected_house_predicted_view['최저당첨가점'] = score_low_predicted
         df_selected_house_predicted_view['최고당첨가점'] = score_high_predicted
-        df_selected_house_predicted_view['시세차익'] = 70  # 예측값(임시)
+        df_selected_house_predicted_view['시세차익'] = price_diff_predicted
 
         def highlight_prediction_columns(val):
             return 'background-color: #e8f9ee; color: #1b5e20; font-weight: 900'
