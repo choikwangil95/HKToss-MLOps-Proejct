@@ -132,7 +132,6 @@ def predict_target(target, model, version, data):
     if "scaler" in feature_pipeline.named_steps:
         scaler = feature_pipeline.named_steps["scaler"]
         scaler.scaler_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/{target}_{model}_scaler_powertransformer_{version}.pkl"
-        scaler.scaler_path = f"./storage/trained_transformer/{target}_{model}_scaler_powertransformer_{version}.pkl"
         print("✅ DataScaler의 URL 속성 재설정 완료!")
 
     # ✅ 변환 실행
