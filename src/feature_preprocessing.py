@@ -20,8 +20,8 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
 
-        # self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률']
-        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '거래금액(만원)']
+        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률']
+        # self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '거래금액(만원)']
 
         self.pt_scaler.fit(X[self.columns_to_normalize_pt])
        
@@ -48,12 +48,12 @@ import urllib.parse
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
         # GitHub 파일 URL (디폴트는 None으로 설정)
-        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/gain_rf_label_encoder_0.0.1.pkl"
-        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/gain_rf_one_hot_columns_0.0.1.pkl"
+        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/gain_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/gain_lgb_one_hot_columns_0.0.1.pkl"
 
         # 로컬 경로 설정
-        self.encoder_path = "./storage/gain_rf_label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/gain_rf_one_hot_columns_0.0.1.pkl"
+        self.encoder_path = "./storage/gain_lgb_label_encoder_0.0.1.pkl"
+        self.one_hot_path = "./storage/gain_lgb_one_hot_columns_0.0.1.pkl"
 
         # 로컬에 파일이 없으면 GitHub에서 다운로드
         self.label_encoder = LabelEncoder()
