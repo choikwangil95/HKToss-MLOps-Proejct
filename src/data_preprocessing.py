@@ -53,9 +53,6 @@ def filter_unnecessary_columns(df):
     # 불필요한 칼럼 삭제
     df = df.drop(columns=unnecessary_columns)
 
-    # 년도와 월만 남기기
-    df['모집공고일'] = df['모집공고일'].str[:7]
-
     return df
 
 
