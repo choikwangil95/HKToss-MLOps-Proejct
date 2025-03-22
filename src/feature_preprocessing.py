@@ -1,7 +1,14 @@
 import pandas as pd
 import numpy as np
 import joblib
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder, RobustScaler, PowerTransformer, QuantileTransformer
+from sklearn.preprocessing import (
+    MinMaxScaler,
+    StandardScaler,
+    LabelEncoder,
+    RobustScaler,
+    PowerTransformer,
+    QuantileTransformer,
+)
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 import os
@@ -19,10 +26,21 @@ from sklearn.preprocessing import PowerTransformer, LabelEncoder
 
 class DataScaler(BaseEstimator, TransformerMixin):
     def __init__(self, scaler_url=None):
-        self.scaler_url = scaler_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_scaler_powertransformer_0.0.1.pkl"
-        self.scaler_path = "./storage/trained_transformer/gain_lgb_scaler_powertransformer_0.0.1.pkl"
+        self.scaler_url = (
+            scaler_url
+            or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_scaler_powertransformer_0.0.1.pkl"
+        )
+        self.scaler_path = (
+            "./storage/trained_transformer/low_lgb_scaler_powertransformer_0.0.1.pkl"
+        )
         self.pt_scaler = PowerTransformer()
-        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '기준금리']
+        self.columns_to_normalize_pt = [
+            "공급규모",
+            "접수건수",
+            "경쟁률",
+            "기준금리",
+            "시세차익",
+        ]
 
     def download_from_github(self, url, file_path):
         if not os.path.exists(file_path):
@@ -51,9 +69,13 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
         if os.path.exists(self.scaler_path):
             self.pt_scaler = joblib.load(self.scaler_path)
-            X[self.columns_to_normalize_pt] = self.pt_scaler.transform(X[self.columns_to_normalize_pt])
+            X[self.columns_to_normalize_pt] = self.pt_scaler.transform(
+                X[self.columns_to_normalize_pt]
+            )
         else:
-            print("🚨 스케일러 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다.")
+            print(
+                "🚨 스케일러 로드 실패! 로컬 및 GitHub에서 모두 파일을 찾을 수 없습니다."
+            )
         return X
 
     def inverse_transform(self, X):
@@ -61,7 +83,9 @@ class DataScaler(BaseEstimator, TransformerMixin):
         if os.path.exists(self.scaler_path):
             try:
                 self.pt_scaler = joblib.load(self.scaler_path)
-                X[self.columns_to_normalize_pt] = self.pt_scaler.inverse_transform(X[self.columns_to_normalize_pt])
+                X[self.columns_to_normalize_pt] = self.pt_scaler.inverse_transform(
+                    X[self.columns_to_normalize_pt]
+                )
             except Exception as e:
                 print(f"🚨 inverse_transform 실패: {e}")
         else:
@@ -71,12 +95,32 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
 class DataEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoder_url=None, one_hot_url=None):
-        self.encoder_url = encoder_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_url = one_hot_url or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/gain_lgb_one_hot_columns_0.0.1.pkl"
-        self.encoder_path = "./storage/trained_transformer/gain_lgb_label_encoder_0.0.1.pkl"
-        self.one_hot_path = "./storage/trained_transformer/gain_lgb_one_hot_columns_0.0.1.pkl"
+        self.encoder_url = (
+            encoder_url
+            or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_label_encoder_0.0.1.pkl"
+        )
+        self.one_hot_url = (
+            one_hot_url
+            or "https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_transformer/low_lgb_one_hot_columns_0.0.1.pkl"
+        )
+        self.encoder_path = (
+            "./storage/trained_transformer/low_lgb_label_encoder_0.0.1.pkl"
+        )
+        self.one_hot_path = (
+            "./storage/trained_transformer/low_lgb_one_hot_columns_0.0.1.pkl"
+        )
         self.label_encoder = LabelEncoder()
-        self.one_hot_columns = ['투기과열지구', '조정대상지역', '분양가상한제', '정비사업', '공공주택지구', '대규모택지개발지구', '거주지역', '수도권내민영공공주택지구', '순위']
+        self.one_hot_columns = [
+            "투기과열지구",
+            "조정대상지역",
+            "분양가상한제",
+            "정비사업",
+            "공공주택지구",
+            "대규모택지개발지구",
+            "거주지역",
+            "수도권내민영공공주택지구",
+            # "순위",
+        ]
         self.fitted = False
         self.one_hot_categories = None
 
@@ -94,8 +138,8 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         X = X.copy()
-        X['공급지역명'] = X['공급지역명'].astype(str)
-        unique_labels = list(X['공급지역명'].unique()) + ['unknown']
+        X["공급지역명"] = X["공급지역명"].astype(str)
+        unique_labels = list(X["공급지역명"].unique()) + ["unknown"]
         self.label_encoder.fit(unique_labels)
         self.fitted = True
         joblib.dump(self.label_encoder, self.encoder_path)
@@ -107,7 +151,7 @@ class DataEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         X = X.copy()
-        X['공급지역명'] = X['공급지역명'].astype(str)
+        X["공급지역명"] = X["공급지역명"].astype(str)
 
         if not os.path.exists(self.encoder_path):
             print(f"{self.encoder_path} 파일이 없습니다. GitHub에서 다운로드합니다.")
@@ -119,12 +163,14 @@ class DataEncoder(BaseEstimator, TransformerMixin):
             print("🚨 LabelEncoder 로드 실패!")
             return X
 
-        unknown_labels = set(X['공급지역명']) - set(self.label_encoder.classes_)
+        unknown_labels = set(X["공급지역명"]) - set(self.label_encoder.classes_)
         if unknown_labels:
-            print(f"⚠️ 새로운 공급지역명 발견 {unknown_labels}. 'unknown'으로 대체합니다.")
-            X.loc[X['공급지역명'].isin(unknown_labels), '공급지역명'] = 'unknown'
+            print(
+                f"⚠️ 새로운 공급지역명 발견 {unknown_labels}. 'unknown'으로 대체합니다."
+            )
+            X.loc[X["공급지역명"].isin(unknown_labels), "공급지역명"] = "unknown"
 
-        X['공급지역명'] = self.label_encoder.transform(X['공급지역명'])
+        X["공급지역명"] = self.label_encoder.transform(X["공급지역명"])
 
         X_encoded = pd.get_dummies(X, columns=self.one_hot_columns, dummy_na=False)
 
@@ -146,8 +192,10 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         if os.path.exists(self.encoder_path):
             try:
                 self.label_encoder = joblib.load(self.encoder_path)
-                if '공급지역명' in X.columns:
-                    X['공급지역명'] = self.label_encoder.inverse_transform(X['공급지역명'].astype(int))
+                if "공급지역명" in X.columns:
+                    X["공급지역명"] = self.label_encoder.inverse_transform(
+                        X["공급지역명"].astype(int)
+                    )
             except Exception as e:
                 print(f"🚨 inverse_transform 실패: {e}")
         else:
@@ -155,16 +203,10 @@ class DataEncoder(BaseEstimator, TransformerMixin):
         return X
 
 
-
 def pipeline2():
     scaler = DataScaler()
     encoder = DataEncoder()
 
-    feature_pipeline = Pipeline(
-        [
-            ("scaler", scaler),
-            ("encoder", encoder)
-        ]
-    )
+    feature_pipeline = Pipeline([("scaler", scaler), ("encoder", encoder)])
 
     return feature_pipeline
