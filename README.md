@@ -4,6 +4,11 @@
 
 🏠 주택청약 당첨가점 예측 ML 모델 개발
 
+[서비스 링크](https://hktoss-blue-jeans.streamlit.app/)
+
+<img width="1275" alt="스크린샷 2025-03-23 오후 1 36 13" src="https://github.com/user-attachments/assets/dfe73917-e7c0-48ef-93b9-8501dc42a237" />
+
+
 ### 팀원
 - [🔗](https://github.com/eugeneee0126) 이유진
 - [🔗](https://github.com/Joo-an) 이주안
