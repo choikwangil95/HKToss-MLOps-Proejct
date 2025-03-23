@@ -60,11 +60,11 @@ def print_estate_list_map(df_unique):
     m = folium.Map(
         location=[center_lat, center_lon],
         zoom_start=12,
-        # dragging=False,  # 🛑 마우스로 드래그 금지
+        dragging=False,  # 🛑 마우스로 드래그 금지
         # zoom_control=False,  # 🔍 플러스/마이너스 버튼 숨김
-        # scrollWheelZoom=False,  # 🖱️ 마우스 휠로 확대/축소 막기
-        # doubleClickZoom=False,  # ⬆️ 더블클릭 확대 금지
-        # touchZoom=False,  # 📱 모바일 핀치 확대 금지)
+        scrollWheelZoom=False,  # 🖱️ 마우스 휠로 확대/축소 막기
+        doubleClickZoom=False,  # ⬆️ 더블클릭 확대 금지
+        touchZoom=False,  # 📱 모바일 핀치 확대 금지)
     )
 
     # ✅ 모든 좌표의 최소/최대값을 사용하여 경계(Bounds) 계산
@@ -99,13 +99,13 @@ def print_estate_list_map(df_unique):
         # 텍스트 DivIcon (중앙 하단 위치)
         folium.map.Marker(
             location=[
-                row["위도"] - 0.004,
-                row["경도"] + 0.003,
+                row["위도"],
+                row["경도"],
             ],  # 아이콘 바로 아래에 위치
             interactive=False,  # ✅ 클릭 이벤트 완전 차단!
             icon=DivIcon(
                 icon_size=(0, 0),  # 실제 아이콘 크기는 의미 없음
-                icon_anchor=(80, 0),  # 중앙 하단 기준 (텍스트 상자 width의 절반)
+                icon_anchor=(68, -10),  # 중앙 하단 기준 (텍스트 상자 width의 절반)
                 html=f"""
                     <div style="
                         pointer-events: none;  /* ❗클릭 방지 */
@@ -133,13 +133,13 @@ def print_estate_list_map(df_unique):
         # 2. 항상 노출되는 이미지 툴팁 (마커 위에 위치)
         folium.Marker(
             location=[
-                row["위도"] + 0.052,
-                row["경도"] - 0.03,
+                row["위도"],
+                row["경도"],
             ],  # 마커보다 약간 위로 띄우기
             interactive=False,  # ✅ 클릭 이벤트 완전 차단!
             icon=DivIcon(
                 icon_size=(20, 10),
-                icon_anchor=(0, 0),
+                icon_anchor=(40, 100),
                 html=f"""
                 <div style="
                     pointer-events: none;  /* ❗클릭 방지 */
