@@ -4,7 +4,7 @@
 
 [서비스 링크](https://hktoss-blue-jeans.streamlit.app/)
 
-<img alt="스크린샷 2025-03-23 오후 8 07 13" src="https://github.com/user-attachments/assets/8dc2d344-9b84-4a33-a350-9547e3d4afb4" width="60%" />
+<img alt="스크린샷 2025-03-23 오후 8 07 13" src="https://github.com/user-attachments/assets/8dc2d344-9b84-4a33-a350-9547e3d4afb4" width="80%" />
 
 ### 팀원
 - [🔗](https://github.com/eugeneee0126) 이유진
