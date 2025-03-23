@@ -4,10 +4,13 @@ from api import get_future_estate_list, add_address_code, get_dummy_estate_list
 from view import get_kakao_api_key, print_estate_list_map, predict_target
 import shap
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import date
 import platform
 import time
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
 
 kakao_api_key = get_kakao_api_key()
 
@@ -35,6 +38,39 @@ for key, value in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
+
+# 한글 깨짐 방지용 기본 세팅 함수
+def set_korean_font():
+    font_url = "https://github.com/google/fonts/raw/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf"
+    font_path = "./fonts/NotoSansKR.ttf"
+
+    # 1. 디렉토리 생성
+    os.makedirs(os.path.dirname(font_path), exist_ok=True)
+
+    # 2. 다운로드
+    if not os.path.exists(font_path):
+        try:
+            urllib.request.urlretrieve(font_url, font_path)
+            print("✅ 한글 폰트 다운로드 완료!")
+        except Exception as e:
+            print(f"🚨 폰트 다운로드 실패: {e}")
+            return
+
+    # 1. 폰트를 수동으로 등록
+    fm.fontManager.addfont(font_path)
+
+    # 2. 폰트 이름 가져오기
+    font_prop = fm.FontProperties(fname=font_path)
+    font_name = font_prop.get_name()
+    print("▶ 등록된 폰트 이름:", font_name)
+
+    # 3. matplotlib 설정에 반영
+    plt.rcParams["font.family"] = font_name
+    plt.rcParams["axes.unicode_minus"] = False
+
+
+set_korean_font()
+
 ##########################################################
 
 with st.sidebar:
@@ -57,6 +93,28 @@ with st.sidebar:
     )
 
     st.link_button("Github", "https://github.com/choikwangil95/HKToss-MLOps-Proejct")
+
+    VERSION = "1.0.0"
+
+    # 스타일 먼저 선언
+    st.markdown(
+        f"""
+        <style>
+        .sidebar-version {{
+            position: fixed;
+            bottom: 20px;
+            left: 16px;
+            font-size: 12px;
+            color: gray;
+            z-index: 100;
+        }}
+        </style>
+        <div class="sidebar-version">
+            version: {VERSION}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 st.subheader("1 공고중인 주택청약 매물 목록")
@@ -149,8 +207,13 @@ if predict_button:
         )
 
         # 예측 결과 저장
-        st.session_state["score_low_predicted"] = score_low_predicted
-        st.session_state["score_high_predicted"] = score_high_predicted
+        # 모델의 오차로 인해 최고보다 최저가 큰 경우 값을 바꿔준다.
+        if score_high_predicted[0] < score_low_predicted[0]:
+            st.session_state["score_low_predicted"] = score_high_predicted
+            st.session_state["score_high_predicted"] = score_low_predicted
+        else:
+            st.session_state["score_low_predicted"] = score_low_predicted
+            st.session_state["score_high_predicted"] = score_high_predicted
         st.session_state["price_diff_predicted"] = price_diff_predicted
 
         # shap 및 기타 데이터 저장
@@ -171,28 +234,31 @@ if predict_button:
             "price_diff_predicted"
         ]
 
+        df_selected_house_predicted_view["공급금액"] = df_selected_house_predicted_view[
+            "공급금액"
+        ].apply(lambda x: f"{x:,.0f}")
+        df_selected_house_predicted_view["경쟁률"] = df_selected_house_predicted_view[
+            "경쟁률"
+        ].apply(lambda x: f"{x:.2f}")
+        df_selected_house_predicted_view["최저당첨가점"] = (
+            df_selected_house_predicted_view["최저당첨가점"].apply(lambda x: f"{x:.0f}")
+        )
+        df_selected_house_predicted_view["최고당첨가점"] = (
+            df_selected_house_predicted_view["최고당첨가점"].apply(lambda x: f"{x:.0f}")
+        )
+        df_selected_house_predicted_view["시세차익"] = df_selected_house_predicted_view[
+            "시세차익"
+        ].apply(lambda x: f"{x:,.0f}")
+
         def highlight_prediction_columns(val):
             return "background-color: #e8f9ee; color: black; font-weight: 900"
 
-        styled_df = df_selected_house_predicted_view.style.format(
-            {
-                "공급금액": "{:,.0f}",
-                "경쟁률": "{:.2f}",
-                "최저당첨가점": "{:.0f}",
-                "최고당첨가점": "{:.0f}",
-                "시세차익": "{:,.0f}",
-            }
-        ).applymap(highlight_prediction_columns, subset=["최저당첨가점", "최고당첨가점", "시세차익"])
-
-        styled_df_origin = df_selected_house_predicted_view.style.format(
-            {
-                "공급금액": "{:,.0f}",
-                "경쟁률": "{:.2f}",
-                "최저당첨가점": "{:.0f}",
-                "최고당첨가점": "{:.0f}",
-                "시세차익": "{:,.0f}",
-            }
+        styled_df = df_selected_house_predicted_view.style.applymap(
+            highlight_prediction_columns,
+            subset=["최저당첨가점", "최고당첨가점", "시세차익"],
         )
+
+        styled_df_origin = df_selected_house_predicted_view
 
         st.session_state.df_predicted = styled_df
         st.session_state.df_predicted_origin = styled_df_origin
@@ -277,14 +343,6 @@ if st.session_state.is_predicted:
             unsafe_allow_html=True,
         )
 
-    # 한글 폰트 설정
-    if platform.system() == "Darwin":
-        plt.rcParams["font.family"] = "AppleGothic"
-    elif platform.system() == "Windows":
-        plt.rcParams["font.family"] = "Malgun Gothic"
-    else:
-        plt.rcParams["font.family"] = "DejaVu Sans"
-
     plt.rcParams["axes.unicode_minus"] = False  # 마이너스 기호 깨짐 방지
 
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
@@ -347,9 +405,9 @@ if st.session_state.is_predicted:
         feature_mean = feature_means.get(name)
         if feature_mean is not None:
             if isinstance(feature_mean, float):
-                mean_text = f"(전체 {name} 중앙값: {feature_mean:.2f})"
+                mean_text = f"(전체 중앙값: {feature_mean:.2f})"
             else:
-                mean_text = f"(전체 {name} 중앙값: {feature_mean})"
+                mean_text = f"(전체 중앙값: {feature_mean})"
         else:
             mean_text = ""
 

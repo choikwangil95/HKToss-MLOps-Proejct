@@ -57,7 +57,15 @@ def print_estate_list_map(df_unique):
     # 지도 생성 (서울 중심)
     center_lat = df_unique_map["위도"].astype(float).mean()
     center_lon = df_unique_map["경도"].astype(float).mean()
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=12)
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=12,
+        # dragging=False,  # 🛑 마우스로 드래그 금지
+        # zoom_control=False,  # 🔍 플러스/마이너스 버튼 숨김
+        # scrollWheelZoom=False,  # 🖱️ 마우스 휠로 확대/축소 막기
+        # doubleClickZoom=False,  # ⬆️ 더블클릭 확대 금지
+        # touchZoom=False,  # 📱 모바일 핀치 확대 금지)
+    )
 
     # ✅ 모든 좌표의 최소/최대값을 사용하여 경계(Bounds) 계산
     bounds = [
@@ -68,13 +76,24 @@ def print_estate_list_map(df_unique):
     # ✅ 지도에 모든 매물이 포함되도록 설정
     m.fit_bounds(bounds)
 
+    # 이미지 url 추가
+    df_unique_map["img_url"] = [
+        "https://byw.kr/wp-content/uploads/2022/12/about_img-1080x675.jpg",
+        "https://buly.kr/DPTWoNI",
+        "https://cdn.straightnews.co.kr/news/photo/202502/263223_168321_222.jpg",
+        "https://s.zigbang.com/v2/web/og/zigbang_aerial.png",
+    ]
+
     # 마커 추가
     # 마커 + tooltip 추가
     for _, row in df_unique_map.iterrows():
         folium.Marker(
             location=[row["위도"], row["경도"]],
             icon=folium.Icon(color="red", icon="home", prefix="fa"),
-            tooltip=f"[{row['공급지역명']}] {row['주택명']}",
+            popup=None,  # 클릭 비활성화
+            # tooltip=f"[{row['공급지역명']}] {row['주택명']}",
+            tooltip=None,
+            interactive=False,  # ✅ 클릭 이벤트 완전 차단!
         ).add_to(m)
 
         # 텍스트 DivIcon (중앙 하단 위치)
@@ -83,11 +102,13 @@ def print_estate_list_map(df_unique):
                 row["위도"] - 0.004,
                 row["경도"] + 0.003,
             ],  # 아이콘 바로 아래에 위치
+            interactive=False,  # ✅ 클릭 이벤트 완전 차단!
             icon=DivIcon(
                 icon_size=(0, 0),  # 실제 아이콘 크기는 의미 없음
                 icon_anchor=(80, 0),  # 중앙 하단 기준 (텍스트 상자 width의 절반)
                 html=f"""
                     <div style="
+                        pointer-events: none;  /* ❗클릭 방지 */
                         font-size: 12px;
                         font-weight: 600;
                         color: black;
@@ -109,8 +130,30 @@ def print_estate_list_map(df_unique):
             ),
         ).add_to(m)
 
-        # 대신 DivIcon 제거 (모바일/Streamlit 비호환 우려)
-        # 혹은 원한다면 CircleMarker + tooltip도 가능
+        # 2. 항상 노출되는 이미지 툴팁 (마커 위에 위치)
+        folium.Marker(
+            location=[
+                row["위도"] + 0.052,
+                row["경도"] - 0.03,
+            ],  # 마커보다 약간 위로 띄우기
+            interactive=False,  # ✅ 클릭 이벤트 완전 차단!
+            icon=DivIcon(
+                icon_size=(20, 10),
+                icon_anchor=(0, 0),
+                html=f"""
+                <div style="
+                    pointer-events: none;  /* ❗클릭 방지 */
+                    background-color: white;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    box-shadow: 0 0 4px rgba(0,0,0,0.15);
+                    padding: 3px;
+                ">
+                    <img src="{row['img_url']}" width="50" height="50" />
+                </div>
+                """,
+            ),
+        ).add_to(m)
 
     # 지도 출력
     st_folium(m, width=700, height=500)
