@@ -60,11 +60,11 @@ def print_estate_list_map(df_unique):
     m = folium.Map(
         location=[center_lat, center_lon],
         zoom_start=12,
-        dragging=False,  # 🛑 마우스로 드래그 금지
+        # dragging=False,  # 🛑 마우스로 드래그 금지
         # zoom_control=False,  # 🔍 플러스/마이너스 버튼 숨김
         scrollWheelZoom=False,  # 🖱️ 마우스 휠로 확대/축소 막기
         doubleClickZoom=False,  # ⬆️ 더블클릭 확대 금지
-        touchZoom=False,  # 📱 모바일 핀치 확대 금지)
+        # touchZoom=False,  # 📱 모바일 핀치 확대 금지)
     )
 
     # ✅ 모든 좌표의 최소/최대값을 사용하여 경계(Bounds) 계산
