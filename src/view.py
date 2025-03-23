@@ -27,15 +27,24 @@ def get_kakao_api_key():
 
     # ✅ 최종적으로 환경 변수 불러오기 (우선순위: .env > secrets.toml > Streamlit Secrets)
     kakao_api_key = (
-        kakao_api_key_by_toml or  # ✅ 로컬: secrets.toml 사용
-        st.secrets.get("general", {}).get("kakao_api_key")  # ✅ Streamlit Cloud 환경
+        kakao_api_key_by_toml  # ✅ 로컬: secrets.toml 사용
+        or st.secrets.get("general", {}).get("kakao_api_key")  # ✅ Streamlit Cloud 환경
     )
 
     return kakao_api_key
 
 
 def print_estate_list(df_unique):
-    df_unique_view = df_unique[['공급지역명' ,'주택명', '공급규모', '청약접수시작일', '청약접수종료일', '당첨자발표일']]
+    df_unique_view = df_unique[
+        [
+            "공급지역명",
+            "주택명",
+            "공급규모",
+            "청약접수시작일",
+            "청약접수종료일",
+            "당첨자발표일",
+        ]
+    ]
 
     st.dataframe(df_unique_view, use_container_width=True)
 
@@ -52,33 +61,58 @@ def print_estate_list_map(df_unique):
 
     # ✅ 모든 좌표의 최소/최대값을 사용하여 경계(Bounds) 계산
     bounds = [
-        [df_unique["위도"].min(), df_unique["경도"].min()], 
-        [df_unique["위도"].max(), df_unique["경도"].max()]
+        [df_unique["위도"].min(), df_unique["경도"].min()],
+        [df_unique["위도"].max(), df_unique["경도"].max()],
     ]
 
     # ✅ 지도에 모든 매물이 포함되도록 설정
     m.fit_bounds(bounds)
 
     # 마커 추가
+    # 마커 + tooltip 추가
     for _, row in df_unique_map.iterrows():
         folium.Marker(
             location=[row["위도"], row["경도"]],
-            radius=10,  # 원의 크기
-            color="red",  # 원 테두리 색상
-            # popup=f"주택명: {row['주택명']}"  # 팝업 정보
+            icon=folium.Icon(color="red", icon="home", prefix="fa"),
+            tooltip=f"[{row['공급지역명']}] {row['주택명']}",
         ).add_to(m)
 
-        # 원 위에 주택명 추가 (항상 표시됨)
+        # 텍스트 DivIcon (중앙 하단 위치)
         folium.map.Marker(
-            [row["위도"] - 0.002, row["경도"] - 0.025],
+            location=[
+                row["위도"] - 0.004,
+                row["경도"] + 0.003,
+            ],  # 아이콘 바로 아래에 위치
             icon=DivIcon(
-                icon_size=(150, 36),
-                icon_anchor=(0, 0),
-                html=f'<div style="font-size: 12px; color: black; background: white; width: 150px; white-space: wrap; border: 1px solid black; padding: 3px; border-radius: 5px;">[{row["공급지역명"]}] {row["주택명"]}</div>'
-            )
+                icon_size=(0, 0),  # 실제 아이콘 크기는 의미 없음
+                icon_anchor=(80, 0),  # 중앙 하단 기준 (텍스트 상자 width의 절반)
+                html=f"""
+                    <div style="
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: black;
+                        background-color: white;
+                        padding: 4px 6px;
+                        border: 1px solid #888;
+                        border-radius: 4px;
+                        box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+                        text-align: center;
+                        min-width: 150px;       /* ✅ 최소 너비 설정 */
+                        max-width: 220px;
+                        white-space: nowrap;    /* ✅ 줄바꿈 방지 */
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    ">
+                        [{row["공급지역명"]}] {row["주택명"]}
+                    </div>
+                """,
+            ),
         ).add_to(m)
 
-    # Streamlit에 지도 표시
+        # 대신 DivIcon 제거 (모바일/Streamlit 비호환 우려)
+        # 혹은 원한다면 CircleMarker + tooltip도 가능
+
+    # 지도 출력
     st_folium(m, width=700, height=500)
 
 
@@ -99,14 +133,18 @@ def predict_target(target, model, version, data):
 
     # ✅ 모델 불러오기
     trained_model = joblib.load(model_path)
-    trained_model = joblib.load(f"./storage/trained_model/model_{target}_{model}_{version}.pkl")
+    trained_model = joblib.load(
+        f"./storage/trained_model/model_{target}_{model}_{version}.pkl"
+    )
 
     # ✅ Pipeline 객체를 생성할 때 pipeline()을 호출해야 함
-    preprocessing_pipeline = pipeline(type='predict')
+    preprocessing_pipeline = pipeline(type="predict", target=target)
 
     # ✅ 파이프라인 저장 경로
     pipeline_url = f"https://raw.githubusercontent.com/choikwangil95/HKToss-MLOps-Proejct/streamlit/src/storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
-    pipeline_path = f"./storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
+    pipeline_path = (
+        f"./storage/trained_pipeline/pipeline_{target}_{model}_{version}.pkl"
+    )
 
     # ✅ 폴더 확인 및 생성
     if not os.path.exists("./storage/trained_pipeline"):
@@ -141,17 +179,19 @@ def predict_target(target, model, version, data):
     df_selected_house = preprocessing_pipeline.transform(data)
     df_selected_house = feature_pipeline.transform(df_selected_house)
 
-    test = df_selected_house['투기과열지구_N']
+    test = df_selected_house["투기과열지구_N"]
 
-    print(f'debug {test}==========================================================')
+    print(f"debug {test}==========================================================")
 
     # 역변환용 데이터 복사
     df_selected_house_reversed = df_selected_house.copy()
 
     # feature_pipeline 내 스텝 역순으로 순회
     for step_name, step in reversed(feature_pipeline.steps):
-        if hasattr(step, 'inverse_transform'):
-            df_selected_house_reversed = step.inverse_transform(df_selected_house_reversed)
+        if hasattr(step, "inverse_transform"):
+            df_selected_house_reversed = step.inverse_transform(
+                df_selected_house_reversed
+            )
 
     # 모델 예측 결과
     predicted = trained_model.predict(df_selected_house)
