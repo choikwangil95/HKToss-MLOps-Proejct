@@ -20,12 +20,12 @@ class DataScaler(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
 
-        # self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '기준금리']
+        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '기준금리']
 
         # 당첨가점 _ori
         # self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '시세차익']
 
-        self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '거래금액(만원)']
+        # self.columns_to_normalize_pt = ['공급규모', '접수건수', '경쟁률', '거래금액(만원)']
 
         self.pt_scaler.fit(X[self.columns_to_normalize_pt])
        
