@@ -61,9 +61,7 @@
 
 ### 아키텍쳐
 
-- [🔗](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning?hl=ko#mlops_level_0_manual_process) 구글 MLOps 아키텍쳐
-
-![image](https://github.com/user-attachments/assets/e8b38089-6776-4a21-8bb4-51cc1eaa441a)
+![화면 캡처 2025-03-24 095250](https://github.com/user-attachments/assets/4127ec3d-6d5b-46eb-8018-de22756e8a22)
 
 
 ## 3 개발환경 구성
