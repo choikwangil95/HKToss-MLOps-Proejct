@@ -63,7 +63,7 @@
 
 ### 아키텍쳐
 
-![화면 캡처 2025-03-24 095250](https://github.com/user-attachments/assets/4127ec3d-6d5b-46eb-8018-de22756e8a22)
+![화면 캡처 2025-03-28 160716](https://github.com/user-attachments/assets/0a0e0b33-ddf0-4d9d-aa0a-518554ea59de)
 
 
 ## 3 개발환경 구성
